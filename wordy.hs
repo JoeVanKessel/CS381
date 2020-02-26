@@ -49,4 +49,5 @@ data Cmd = Count Word
          | Reverse Sentence
          | Contains Word Char
          | IfElse Prog Prog
+         | Insert Word Sentence Int
   deriving (Eq,Show)
