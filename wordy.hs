@@ -30,6 +30,8 @@ module Wordy where
 
 -- 1. Encode the above grammar as a set of Haskell data types
 
+
+--type Domain = Either Int String
 type Sentence = [Wordy]
 type Prog = [Cmd]
 
@@ -46,15 +48,17 @@ data Wordy = Verb String
           | Determiner String
   deriving (Eq,Show)
 
-data Cmd = Count Wordy
+data Cmd = Count String
          | Reverse String
          | Insert Int OneWord String
+         | Compare String String
          | Contains Wordy Char
          | IfElse Prog Prog
   deriving (Eq,Show)
 
 
 cmd :: Cmd -> String
+--cmd (Count x) = countWords x
 cmd (Insert x y z) = insertWord x y z
 cmd (Reverse x) = reverseSentence x
 
@@ -67,9 +71,23 @@ cmd (Reverse x) = reverseSentence x
 listString :: String -> [String]
 listString givenString = words givenString
 
+countWords :: String -> Int
+countWords sentence = length (listString sentence)
+
+compareWordCount :: String -> String -> Bool 
+compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
+
 reverseSentence :: String -> String
 reverseSentence sentence = unwords (reverse (listString sentence))
 
 insertWord :: Int -> OneWord -> String -> String 
 insertWord pos word wordList = unwords (atPos ++ (word:list))
                   where (atPos,list) = splitAt pos (listString wordList)
+
+
+
+
+
+--safeDiv :: Float -> Float -> Either String Float
+--safeDiv x 0 = Left "Divison by zero"
+--safeDiv x y = Right (x / y)
