@@ -34,7 +34,7 @@ import Data.Char
 
 --type Domain = Either Int String
 --type SentenceList = [Wordy]
-type Prog = [Cmd]
+type Prog = [Expr]
 
 type OneWord = String
 type Sentence = String
@@ -50,7 +50,7 @@ type Sentence = String
           | Determiner String
   deriving (Eq,Show)
 --}
-data Cmd = Count Sentence
+data Expr = Count Sentence --expr
          | Reverse Sentence
          | Insert Int OneWord Sentence
          | Remove OneWord Sentence
@@ -62,7 +62,7 @@ data Cmd = Count Sentence
   deriving (Eq,Show)
 
 
-cmd :: Cmd -> String
+cmd :: Expr -> Sentence
 --cmd (Count x) = countWords x
 cmd (Insert x y z) = insertWord x y z
 cmd (Reverse x) = reverseSentence x
@@ -73,21 +73,23 @@ cmd (Reverse x) = reverseSentence x
 
 -- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
 
-listString :: String -> [String]
+listString :: Sentence -> [Sentence]
 listString givenString = words givenString
 
-countWords :: String -> Int
+countWords :: Sentence -> Int
 countWords sentence = length (listString sentence)
 
-reverseSentence :: String -> String
+reverseSentence :: String -> Sentence
 reverseSentence sentence = unwords (reverse (listString sentence))
 
-insertWord :: Int -> OneWord -> String -> String 
+insertWord :: Int -> OneWord -> Sentence -> Sentence 
 insertWord pos word wordList = unwords (atPos ++ (word:list))
                   where (atPos,list) = splitAt pos (listString wordList)
 
---capitalize :: Sentence -> Sentence
---capitalize sentence = capWord (listString sentence)
+capitalize :: Sentence -> Sentence
+capitalize [] = []
+capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
+                where (single:list) = listString sentence
 
 allCap:: Sentence -> Sentence
 allCap sentence = map toUpper sentence
@@ -96,7 +98,7 @@ allLow:: Sentence -> Sentence
 allLow sentence = map toLower sentence
 
 
-capWord :: String -> String
+capWord :: Sentence -> Sentence
 capWord [] = []
 capWord (x:xs) = toUpper x : map toLower xs
 
