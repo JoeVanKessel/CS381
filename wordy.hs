@@ -1,4 +1,5 @@
 module Wordy where
+import Data.Char
 --
 -- * Syntax of Wordy
 --
@@ -32,12 +33,13 @@ module Wordy where
 
 
 --type Domain = Either Int String
-type Sentence = [Wordy]
+--type SentenceList = [Wordy]
 type Prog = [Cmd]
 
 type OneWord = String
+type Sentence = String
 
-data Wordy = Verb String
+{-- data Wordy = Verb String
           | Adj String
           | Noun String
           | Adverb String
@@ -47,13 +49,16 @@ data Wordy = Verb String
           | Interjection String
           | Determiner String
   deriving (Eq,Show)
-
-data Cmd = Count String
-         | Reverse String
-         | Insert Int OneWord String
-         | Compare String String
-         | Contains Wordy Char
-         | IfElse Prog Prog
+--}
+data Cmd = Count Sentence
+         | Reverse Sentence
+         | Insert Int OneWord Sentence
+         | Remove OneWord Sentence
+         | Capitalize Sentence
+         | Lowercase Sentence
+         -- | Compare String Sentence
+         -- | Contains Wordy Char
+         -- | IfElse Prog Prog
   deriving (Eq,Show)
 
 
@@ -74,15 +79,47 @@ listString givenString = words givenString
 countWords :: String -> Int
 countWords sentence = length (listString sentence)
 
-compareWordCount :: String -> String -> Bool 
-compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
-
 reverseSentence :: String -> String
 reverseSentence sentence = unwords (reverse (listString sentence))
 
 insertWord :: Int -> OneWord -> String -> String 
 insertWord pos word wordList = unwords (atPos ++ (word:list))
                   where (atPos,list) = splitAt pos (listString wordList)
+
+--capitalize :: Sentence -> Sentence
+--capitalize sentence = capWord (listString sentence)
+
+allCap:: Sentence -> Sentence
+allCap sentence = map toUpper sentence
+
+allLow:: Sentence -> Sentence
+allLow sentence = map toLower sentence
+
+
+capWord :: String -> String
+capWord [] = []
+capWord (x:xs) = toUpper x : map toLower xs
+
+
+-- Wordy Programs 
+
+-- a program to compare the number of words of one sentence to another, if same return True, if not return false
+
+compareWordCount :: String -> String -> Bool 
+compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
