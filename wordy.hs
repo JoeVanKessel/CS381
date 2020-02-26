@@ -38,7 +38,6 @@ data Prog = P [Expr]
   deriving (Eq,Show)
 
 type OneWord = String
-type Sentence = String
 
 {-- data Wordy = Verb String
           | Adj String
@@ -51,13 +50,13 @@ type Sentence = String
           | Determiner String
   deriving (Eq,Show)
 --}
-data Expr = Sen String
-         | Count Sentence --expr
-         | Reverse Sentence
-         | Insert Int OneWord Sentence
-         | Remove OneWord Sentence
-         | Capitalize Sentence
-         | Lowercase Sentence
+data Expr = Sentence String
+         | Count Expr --expr
+         | Reverse Expr
+         | Insert Int OneWord Expr
+         | Remove OneWord Expr
+         | Capitalize Expr
+         | Lowercase Expr
          -- | Compare String Sentence
          -- | Contains Wordy Char
          -- | IfElse Prog Prog
@@ -79,7 +78,7 @@ stmt (Bind x y) = x
 
 
 
-cmd :: Expr -> Sentence
+cmd :: Expr -> Expr
 --cmd (Count x) = countWords x
 --cmd (Sen x sen) = let x = sen
 cmd (Insert x y z) = insertWord x y z
@@ -91,32 +90,32 @@ cmd (Reverse x) = reverseSentence x
 
 -- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
 
-listString :: Sentence -> [Sentence]
+listString :: String -> [Expr]
 listString givenString = words givenString
 
-countWords :: Sentence -> Int
-countWords sentence = length (listString sentence)
+countWords :: String -> Int
+countWords sentence = length (listString (Sentence sentence))
 
-reverseSentence :: String -> Sentence
-reverseSentence sentence = unwords (reverse (listString sentence))
+reverseSentence :: String -> Expr
+reverseSentence sentence = unwords (reverse (listString (Sentence sentence)))
 
-insertWord :: Int -> OneWord -> Sentence -> Sentence 
+insertWord :: Int -> OneWord -> String -> Expr 
 insertWord pos word wordList = unwords (atPos ++ (word:list))
                   where (atPos,list) = splitAt pos (listString wordList)
 
-capitalize :: Sentence -> Sentence
+capitalize :: String -> Expr
 capitalize [] = []
 capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
-                where (single:list) = listString sentence
+                where (single:list) = listString (Sentence sentence)
 
-allCap:: Sentence -> Sentence
-allCap sentence = map toUpper sentence
+allCap:: String -> Expr
+allCap sentence = map toUpper (Sentence sentence)
 
-allLow:: Sentence -> Sentence
-allLow sentence = map toLower sentence
+allLow:: String -> Expr
+allLow sentence = map toLower (Sentence sentence)
 
 
-capWord :: Sentence -> Sentence
+capWord :: String -> Expr
 capWord [] = []
 capWord (x:xs) = toUpper x : map toLower xs
 
