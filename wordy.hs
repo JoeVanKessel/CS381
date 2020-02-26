@@ -34,7 +34,8 @@ import Data.Char
 
 --type Domain = Either Int String
 --type SentenceList = [Wordy]
-type Prog = [Expr]
+data Prog = P [Expr]
+  deriving (Eq,Show)
 
 type OneWord = String
 type Sentence = String
@@ -50,7 +51,8 @@ type Sentence = String
           | Determiner String
   deriving (Eq,Show)
 --}
-data Expr = Count Sentence --expr
+data Expr = Sen String
+         | Count Sentence --expr
          | Reverse Sentence
          | Insert Int OneWord Sentence
          | Remove OneWord Sentence
@@ -62,8 +64,24 @@ data Expr = Count Sentence --expr
   deriving (Eq,Show)
 
 
+
+data Stmt = Bind String Expr
+          | If Expr Stmt Stmt
+          -- | While Expr Stmt
+          -- | Block [Stmt]
+  deriving (Eq,Show)
+
+
+stmt :: Stmt -> Expr
+stmt (Bind x y) = x
+            where x = y
+
+
+
+
 cmd :: Expr -> Sentence
 --cmd (Count x) = countWords x
+--cmd (Sen x sen) = let x = sen
 cmd (Insert x y z) = insertWord x y z
 cmd (Reverse x) = reverseSentence x
 
@@ -103,6 +121,23 @@ capWord [] = []
 capWord (x:xs) = toUpper x : map toLower xs
 
 
+{---------------
+evalBool :: Expr -> Env Val -> Bool
+evalBool e m = case evalExpr e m of
+                 Right b -> b
+                 Left _  -> error "internal error: expected Bool got Int"
+
+evalStmt :: Stmt -> Env Val -> Env Val
+evalStmt (If c st se) m = if evalBool c m
+                          then evalStmt st m
+                          else evalStmt se m
+
+-- Helper function to evaluate a list of statements. We could also
+evalStmts :: [Stmt] -> Env Val -> Env Val
+evalStmts []     m = m
+evalStmts (s:ss) m = evalStmts ss (evalStmt s m)
+----------------}
+
 -- Wordy Programs 
 
 -- a program to compare the number of words of one sentence to another, if same return True, if not return false
@@ -110,7 +145,8 @@ capWord (x:xs) = toUpper x : map toLower xs
 compareWordCount :: String -> String -> Bool 
 compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
 
-
+p1 :: Prog
+p1 = P []
 
 
 
