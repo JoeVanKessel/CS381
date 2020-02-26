@@ -1,3 +1,4 @@
+module Wordy where
 --
 -- * Syntax of Wordy
 --
@@ -30,24 +31,31 @@
 
 -- 1. Encode the above grammar as a set of Haskell data types
 
-type Sentence = [Word]
+type Sentence = [Aword]
 
 type Prog = [Cmd]
 
-data Word = Verb String
+
+data Aword = Verb String
           | Adj String
           | Noun String
           | Adverb String
-          | Pronoun Sting
+          | Pronoun String
           | Prepisition String
           | Conjunction String
           | Interjection String
           | Determiner String
   deriving (Eq,Show)
 
-data Cmd = Count Word
-         | Reverse Sentence
-         | Contains Word Char
-         | IfElse Prog Prog
-         | Insert Word Sentence Int
+data Cmd = Insert Aword Sentence Int
+          | Reverse Sentence
+
   deriving (Eq,Show)
+
+cmd :: Cmd -> Sentence
+cmd (Insert w s i) = insert w s i
+
+insert :: Aword -> Sentence -> Int -> Sentence
+insert w s i = let (ys, zs) = splitAt i s in ys ++ [w] ++ zs
+
+-- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
