@@ -1,3 +1,4 @@
+module Wordy where
 --
 -- * Syntax of Wordy
 --
@@ -27,27 +28,72 @@
 -- 5. Check if two words are the same
 
 
-
 -- 1. Encode the above grammar as a set of Haskell data types
 
-type Sentence = [Word]
+<<<<<<< HEAD
+type Sentence = [Wordy]
+type Prog = [Cmd]
+
+type OneWord = String
+
+data Wordy = Verb String
+=======
+type Sentence = [Aword]
 
 type Prog = [Cmd]
 
-data Word = Verb String
+
+data Aword = Verb String
+>>>>>>> ea32b3aa0b6f988e7dcefa828819e2e405b07017
           | Adj String
           | Noun String
           | Adverb String
-          | Pronoun Sting
+          | Pronoun String
           | Prepisition String
           | Conjunction String
           | Interjection String
           | Determiner String
   deriving (Eq,Show)
 
-data Cmd = Count Word
-         | Reverse Sentence
-         | Contains Word Char
+<<<<<<< HEAD
+data Cmd = Count Wordy
+         | Reverse String
+         | Insert Int OneWord String
+         | Contains Wordy Char
          | IfElse Prog Prog
-         | Insert Word Sentence Int
   deriving (Eq,Show)
+
+
+cmd :: Cmd -> String
+cmd (Insert x y z) = insertWord x y z
+cmd (Reverse x) = reverseSentence x
+
+--cmd (Insert w s i) = insert w s i
+--insert :: Wordy -> Sentence -> Int -> Sentence
+--insert w s i = let (ys, zs) = splitAt i s in ys ++ [w] ++ zs
+
+-- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
+
+listString :: String -> [String]
+listString givenString = words givenString
+
+reverseSentence :: String -> String
+reverseSentence sentence = unwords (reverse (listString sentence))
+
+insertWord :: Int -> OneWord -> String -> String 
+insertWord pos word wordList = unwords (atPos ++ (word:list))
+                  where (atPos,list) = splitAt pos (listString wordList)
+=======
+data Cmd = Insert Aword Sentence Int
+          | Reverse Sentence
+
+  deriving (Eq,Show)
+
+cmd :: Cmd -> Sentence
+cmd (Insert w s i) = insert w s i
+
+insert :: Aword -> Sentence -> Int -> Sentence
+insert w s i = let (ys, zs) = splitAt i s in ys ++ [w] ++ zs
+
+-- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
+>>>>>>> ea32b3aa0b6f988e7dcefa828819e2e405b07017
