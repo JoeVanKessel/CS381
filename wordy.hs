@@ -29,11 +29,6 @@ import Data.Char
 -- 5. Check if two words are the same
 
 
--- 1. Encode the above grammar as a set of Haskell data types
-
-
---type Domain = Either Int String
---type SentenceList = [Wordy]
 data Prog = P [Expr]
   deriving (Eq,Show)
 
@@ -51,10 +46,9 @@ type OneWord = String
   deriving (Eq,Show)
 --}
 
-
-
 data Expr = Sentence String
          | Num Int
+         | Bind Expr Expr
          | Count Expr
          | Reverse Expr
          | Insert Expr Expr Expr
@@ -77,19 +71,11 @@ data Value
 
 
 
-data Stmt = Bind Expr Expr
-          | If Expr Stmt Stmt
-          -- | While Expr Stmt
-          -- | Block [Stmt]
-  deriving (Eq,Show)
-
 {--
 stmt :: Stmt -> Expr
 stmt (Bind x y) = x
             where x = y
 --}
-
-
 
 --cmd :: Expr -> Expr
 --cmd (Count x) = countWords x
@@ -136,41 +122,28 @@ capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
 lowWord :: Expr -> Expr
 lowWord (Sentence []) = Sentence []
 lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
--- 
--- 
 
-
-
-{-
-ifElse :: Value
-ifElse (If c t e) = case ifElse c of
-                   B True  -> ifElse t
-                   B False -> ifElse e
+sem :: Expr -> Value
+sem (Sentence x) = S x
+--sem (Bind (Sentence x) (Sentence y)) = S x
+sem (Count (Sentence x)) = countWords (Sentence x)
+sem (Reverse (Sentence x)) = reverseSentence (Sentence x)
+sem (Insert (Num z) (Sentence y) (Sentence x)) = insertWord (Num z) (Sentence y) (Sentence x)
+sem (Equ y z)  = case (sem y, sem z) of
+                   (B a, B b) -> B (a == b)
+                   (S i, S j) -> B (i == j)
                    _ -> Error
--}
+sem (IfElse z y x) = case sem z of
+                   B True  -> sem y
+                   B False -> sem x
+                   _ -> Error
 
-expp :: Expr -> Value
-expp (Count (Sentence x)) = countWords (Sentence x)
-expp (Reverse (Sentence x)) = reverseSentence (Sentence x)
---exp 
---exp (If c t e) = if c then exp t else exp e
 
-{---------------
-evalBool :: Expr -> Env Val -> Bool
-evalBool e m = case evalExpr e m of
-                 Right b -> b
-                 Left _  -> error "internal error: expected Bool got Int"
+-- sem (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
 
-evalStmt :: Stmt -> Env Val -> Env Val
-evalStmt (If c st se) m = if evalBool c m
-                          then evalStmt st m
-                          else evalStmt se m
 
--- Helper function to evaluate a list of statements. We could also
-evalStmts :: [Stmt] -> Env Val -> Env Val
-evalStmts []     m = m
-evalStmts (s:ss) m = evalStmts ss (evalStmt s m)
-----------------}
+
+
 
 -- Wordy Programs 
 
@@ -184,25 +157,6 @@ evalStmts (s:ss) m = evalStmts ss (evalStmt s m)
      --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
 
 
-
-
 -- a program to insert a period after every word of the sentence
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---safeDiv :: Float -> Float -> Either String Float
---safeDiv x 0 = Left "Divison by zero"
---safeDiv x y = Right (x / y)
