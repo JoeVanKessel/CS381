@@ -32,7 +32,7 @@ import Data.Char
 data Prog = P [Expr]
   deriving (Eq,Show)
 
-type OneWord = String
+type Var = String
 
 {-- data Wordy = Verb String
           | Adj String
@@ -70,25 +70,6 @@ data Value
   deriving (Eq,Show)
 
 
-
-{--
-stmt :: Stmt -> Expr
-stmt (Bind x y) = x
-            where x = y
---}
-
---cmd :: Expr -> Expr
---cmd (Count x) = countWords x
---cmd (Sen x sen) = let x = sen
---cmd (Insert x y z) = insertWord x y z
---cmd (Reverse x) = reverseSentence x
-
---cmd (Insert w s i) = insert w s i
---insert :: Wordy -> Sentence -> Int -> Sentence
---insert w s i = let (ys, zs) = splitAt i s in ys ++ [w] ++ zs
-
--- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
-
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
 
@@ -115,8 +96,7 @@ insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ 
 -- 
 -- allLow:: String -> Expr
 -- allLow sentence = map toLower (Sentence sentence)
--- 
--- 
+
 capWord :: Expr -> Expr
 capWord (Sentence []) = Sentence []
 capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
@@ -155,13 +135,16 @@ sem (IfElse z y x) = case sem z of
 --compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
 
 --p1 :: Prog
---p1 = [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
-     --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
+--p1 = P [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
+      --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
 
 
 -- a program to insert a period after every word of the sentence
---sem (Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a "))
 
---p2 :: Prog
---p2 = P [()]
+p2 :: Prog
+p2 = P [(Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a "))]
 
+-- Same but bad program
+
+p3 :: Prog
+p3 = P [(Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a "))]
