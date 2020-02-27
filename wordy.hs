@@ -103,6 +103,8 @@ insertWord :: Expr -> Expr -> Expr -> Value
 insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ (word:list)))
                   where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
+
+--insertWord (Num 2) (Sentence "good") (Sentence "Today is a")
 -- capitalize :: Expr -> Expr
 -- capitalize [] = []
 -- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
@@ -139,7 +141,7 @@ sem (IfElse z y x) = case sem z of
                    _ -> Error
 
 
--- sem (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
+--sem (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
 
 
 
@@ -158,5 +160,8 @@ sem (IfElse z y x) = case sem z of
 
 
 -- a program to insert a period after every word of the sentence
+--sem (Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a "))
 
+--p2 :: Prog
+--p2 = P [()]
 
