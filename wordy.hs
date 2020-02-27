@@ -57,6 +57,7 @@ data Expr = Sentence String
          | Remove OneWord Expr
          | Capitalize Expr
          | Lowercase Expr
+
          -- | Compare String Sentence
          -- | Contains Wordy Char
          -- | IfElse Prog Prog
@@ -70,19 +71,19 @@ data Stmt = Bind String Expr
           -- | Block [Stmt]
   deriving (Eq,Show)
 
-
+{--
 stmt :: Stmt -> Expr
 stmt (Bind x y) = x
             where x = y
+--}
 
 
 
-
-cmd :: Expr -> Expr
+--cmd :: Expr -> Expr
 --cmd (Count x) = countWords x
 --cmd (Sen x sen) = let x = sen
-cmd (Insert x y z) = insertWord x y z
-cmd (Reverse x) = reverseSentence x
+--cmd (Insert x y z) = insertWord x y z
+--cmd (Reverse x) = reverseSentence x
 
 --cmd (Insert w s i) = insert w s i
 --insert :: Wordy -> Sentence -> Int -> Sentence
@@ -90,12 +91,12 @@ cmd (Reverse x) = reverseSentence x
 
 -- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
 
-listString :: String -> [Expr]
-listString givenString = words givenString
+listString :: Expr -> [Expr]
+listString (Sentence givenString) = words (givenString)
 
-countWords :: String -> Int
-countWords sentence = length (listString (Sentence sentence))
-
+countWords :: Expr -> Int
+countWords (Sentence sentence) = length (listString (Sentence sentence))
+{--
 reverseSentence :: String -> Expr
 reverseSentence sentence = unwords (reverse (listString (Sentence sentence)))
 
@@ -118,6 +119,7 @@ allLow sentence = map toLower (Sentence sentence)
 capWord :: String -> Expr
 capWord [] = []
 capWord (x:xs) = toUpper x : map toLower xs
+ --}
 
 
 {---------------
@@ -141,11 +143,16 @@ evalStmts (s:ss) m = evalStmts ss (evalStmt s m)
 
 -- a program to compare the number of words of one sentence to another, if same return True, if not return false
 
-compareWordCount :: String -> String -> Bool 
-compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
+--compareWordCount :: String -> String -> Bool 
+--compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
 
-p1 :: Prog
-p1 = P []
+--p1 :: Prog
+--p1 = P []
+
+
+
+
+-- a program to insert a period after every word of the sentence
 
 
 
