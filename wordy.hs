@@ -50,11 +50,20 @@ type OneWord = String
           | Determiner String
   deriving (Eq,Show)
 --}
+
+data Value
+   = S String
+   | I Int
+   | B Bool
+   | Error
+  deriving (Eq,Show)
+
 data Expr = Sentence String
+         | Num Int
          | Count Expr --expr
          | Reverse Expr
-         | Insert Int OneWord Expr
-         | Remove OneWord Expr
+         | Insert Int Expr Expr
+         | Remove Expr Expr
          | Capitalize Expr
          | Lowercase Expr
 
@@ -91,36 +100,37 @@ stmt (Bind x y) = x
 
 -- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
 
-listString :: Expr -> [Expr]
-listString (Sentence givenString) = words (givenString)
+listString :: Expr -> [String]
+listString (Sentence givenString) = words givenString
 
 countWords :: Expr -> Int
 countWords (Sentence sentence) = length (listString (Sentence sentence))
-{--
-reverseSentence :: String -> Expr
-reverseSentence sentence = unwords (reverse (listString (Sentence sentence)))
-
-insertWord :: Int -> OneWord -> String -> Expr 
-insertWord pos word wordList = unwords (atPos ++ (word:list))
-                  where (atPos,list) = splitAt pos (listString wordList)
-
-capitalize :: String -> Expr
-capitalize [] = []
-capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
-                where (single:list) = listString (Sentence sentence)
-
-allCap:: String -> Expr
-allCap sentence = map toUpper (Sentence sentence)
-
-allLow:: String -> Expr
-allLow sentence = map toLower (Sentence sentence)
 
 
-capWord :: String -> Expr
-capWord [] = []
-capWord (x:xs) = toUpper x : map toLower xs
- --}
+reverseSentence :: Expr -> Expr
+reverseSentence (Sentence sentence) = Sentence (unwords (reverse (listString (Sentence sentence))))
 
+-- insertWord :: Expr -> Expr 
+-- insertWord (Insert pos word (Sentence sentence)) = unwords (atPos ++ (word:list))
+--                   where (atPos,list) = splitAt pos (listString wordList)
+
+-- capitalize :: String -> Expr
+-- capitalize [] = []
+-- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
+                -- where (single:list) = listString (Sentence sentence)
+-- 
+-- allCap:: String -> Expr
+-- allCap sentence = map toUpper (Sentence sentence)
+-- 
+-- allLow:: String -> Expr
+-- allLow sentence = map toLower (Sentence sentence)
+-- 
+-- 
+-- capWord :: String -> Expr
+-- capWord [] = []
+-- capWord (x:xs) = toUpper x : map toLower xs
+-- 
+-- 
 
 {---------------
 evalBool :: Expr -> Env Val -> Bool
