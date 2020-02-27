@@ -51,18 +51,13 @@ type OneWord = String
   deriving (Eq,Show)
 --}
 
-data Value
-   = S String
-   | I Int
-   | B Bool
-   | Error
-  deriving (Eq,Show)
+
 
 data Expr = Sentence String
          | Num Int
          | Count Expr --expr
          | Reverse Expr
-         | Insert Int Expr Expr
+         | Insert Expr Expr Expr
          | Remove Expr Expr
          | Capitalize Expr
          | Lowercase Expr
@@ -70,6 +65,13 @@ data Expr = Sentence String
          -- | Compare String Sentence
          -- | Contains Wordy Char
          -- | IfElse Prog Prog
+  deriving (Eq,Show)
+
+data Value
+   = S String
+   | I Int
+   | B Bool
+   | Error
   deriving (Eq,Show)
 
 
@@ -110,14 +112,14 @@ countWords (Sentence sentence) = length (listString (Sentence sentence))
 reverseSentence :: Expr -> Expr
 reverseSentence (Sentence sentence) = Sentence (unwords (reverse (listString (Sentence sentence))))
 
--- insertWord :: Expr -> Expr 
--- insertWord (Insert pos word (Sentence sentence)) = unwords (atPos ++ (word:list))
---                   where (atPos,list) = splitAt pos (listString wordList)
+insertWord :: Expr -> Expr -> Expr -> Expr
+insertWord (Num pos) (Sentence word) (Sentence sentence) = Sentence (unwords (atPos ++ (word:list)))
+                  where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
--- capitalize :: String -> Expr
+-- capitalize :: Expr -> Expr
 -- capitalize [] = []
 -- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
-                -- where (single:list) = listString (Sentence sentence)
+--                 where (single:list) = listString (Sentence sentence)
 -- 
 -- allCap:: String -> Expr
 -- allCap sentence = map toUpper (Sentence sentence)
@@ -126,9 +128,9 @@ reverseSentence (Sentence sentence) = Sentence (unwords (reverse (listString (Se
 -- allLow sentence = map toLower (Sentence sentence)
 -- 
 -- 
--- capWord :: String -> Expr
--- capWord [] = []
--- capWord (x:xs) = toUpper x : map toLower xs
+capWord :: Expr -> Expr
+capWord (Sentence []) = Sentence []
+capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
 -- 
 -- 
 
