@@ -1,0 +1,36 @@
+﻿CS 381: Design Document
+
+Introduction
+
+Our language is called wordy. This language has a functional paradigm. 
+
+Design
+
+Core Features:
+- Sentence: A string that contains a sentence. This will be manipulated by other feature of the language.
+- Count: A feature that counts the number of words within a sentence.
+- Reverse: A feature that reverses the order of words within a sentence.
+- Insert: A feature that inserts a string into a sentence at a given location.
+- Remove: A feature that removes a given string from a given sentence.
+- If-Then-Else: A conditional used to branch in our language.
+- While: A looping feature that allows repetition while a condition is true.
+- Our language uses a static type system this will allow our programs to be checked for type errors while running.
+
+Library Features:
+- Capitalize: A feature that capitalizes each letter of a given sentence.
+- Lowercase: A feature that makes each letter of a given sentence lowercase.
+- Local variables can declared, bound and referenced. 
+- Functions can be defined and named to limit repeated code. They will use a call by value parameter           passing scheme.
+
+
+Implementation
+
+Semantic Domains:
+
+Our semantic domain is as follows:
+S→ Maybe Value
+
+We will always take a Sentence, but we may return a String, Int, Bool, or nothing if there are errors. 
+
+This language is used to write programs that manipulate strings.
+
