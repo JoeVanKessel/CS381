@@ -55,13 +55,14 @@ type OneWord = String
 
 data Expr = Sentence String
          | Num Int
-         | Count Expr --expr
+         | Count Expr
          | Reverse Expr
          | Insert Expr Expr Expr
          | Remove Expr Expr
          | Capitalize Expr
          | Lowercase Expr
-
+         | IfElse Expr Expr Expr
+         | Equ Expr Expr
          -- | Compare String Sentence
          -- | Contains Wordy Char
          -- | IfElse Prog Prog
@@ -76,7 +77,7 @@ data Value
 
 
 
-data Stmt = Bind String Expr
+data Stmt = Bind Expr Expr
           | If Expr Stmt Stmt
           -- | While Expr Stmt
           -- | Block [Stmt]
@@ -105,15 +106,15 @@ stmt (Bind x y) = x
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
 
-countWords :: Expr -> Int
-countWords (Sentence sentence) = length (listString (Sentence sentence))
+countWords :: Expr -> Value
+countWords (Sentence sentence) = I (length (listString (Sentence sentence)))
 
 
-reverseSentence :: Expr -> Expr
-reverseSentence (Sentence sentence) = Sentence (unwords (reverse (listString (Sentence sentence))))
+reverseSentence :: Expr -> Value
+reverseSentence (Sentence sentence) = S (unwords (reverse (listString (Sentence sentence))))
 
-insertWord :: Expr -> Expr -> Expr -> Expr
-insertWord (Num pos) (Sentence word) (Sentence sentence) = Sentence (unwords (atPos ++ (word:list)))
+insertWord :: Expr -> Expr -> Expr -> Value
+insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ (word:list)))
                   where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
 -- capitalize :: Expr -> Expr
@@ -131,8 +132,28 @@ insertWord (Num pos) (Sentence word) (Sentence sentence) = Sentence (unwords (at
 capWord :: Expr -> Expr
 capWord (Sentence []) = Sentence []
 capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
+
+lowWord :: Expr -> Expr
+lowWord (Sentence []) = Sentence []
+lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
 -- 
 -- 
+
+
+
+{-
+ifElse :: Value
+ifElse (If c t e) = case ifElse c of
+                   B True  -> ifElse t
+                   B False -> ifElse e
+                   _ -> Error
+-}
+
+expp :: Expr -> Value
+expp (Count (Sentence x)) = countWords (Sentence x)
+expp (Reverse (Sentence x)) = reverseSentence (Sentence x)
+--exp 
+--exp (If c t e) = if c then exp t else exp e
 
 {---------------
 evalBool :: Expr -> Env Val -> Bool
@@ -159,7 +180,8 @@ evalStmts (s:ss) m = evalStmts ss (evalStmt s m)
 --compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
 
 --p1 :: Prog
---p1 = P []
+--p1 = [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
+     --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
 
 
 
