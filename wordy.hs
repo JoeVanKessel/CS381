@@ -11,7 +11,7 @@ import Data.Char
 --    num        ::= (any integer)
 --    bool       ::= `true`  |  `false`
 --    prog       ::= cmd*
---    cmd        ::= word
+--    cmd        ::= sentence
 --                 |  bool
 --                 |  `count`
 --                 |  `reverse`
@@ -107,10 +107,11 @@ lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
 
 sem :: Expr -> Value
 sem (Sentence x) = S x
---sem (Bind (Sentence x) (Sentence y)) = S x
-sem (Count (Sentence x)) = countWords (Sentence x)
-sem (Reverse (Sentence x)) = reverseSentence (Sentence x)
-sem (Insert (Num z) (Sentence y) (Sentence x)) = insertWord (Num z) (Sentence y) (Sentence x)
+sem (Num x) = I x
+--sem (Bind x y) =
+sem (Count x) = countWords x
+sem (Reverse x) = reverseSentence x
+sem (Insert z y x) = insertWord z y x
 sem (Equ y z)  = case (sem y, sem z) of
                    (B a, B b) -> B (a == b)
                    (S i, S j) -> B (i == j)
