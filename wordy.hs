@@ -5,46 +5,45 @@ import Data.Char
 --
 
 -- Grammar for Wordy:
---
+
+
 --    word       ::= (any string)
 --    letter     ::= (any char)
 --    num        ::= (any integer)
 --    bool       ::= `true`  |  `false`
+
+
+
 --    prog       ::= cmd*
+
+
+--    value     ::= string
+--                | int
+--                | bool
+--                | error
+
 --    cmd        ::= sentence
---                 |  bool
+--                 |  number
 --                 |  `count`
 --                 |  `reverse`
---                 |  `inWord`
---                 |  `if` prog `else` prog `end`
+--                 |  `insert`
+--                 |  `remove`
+--                 |  `if` cmd `else` cmd `end`
 --
-
 
 -- Program Examples
 
--- 1. Reverse a sentence
--- 2. Insert into a sentence
--- 3. Add/Remove from sentence
--- 4. Create a valid sentence out of words
--- 5. Check if two words are the same
+-- 1. Combine two sentences into one
+-- 2. comapre the length of two sentences
+-- 3.
+-- 4.
+-- 5.
 
 
 data Prog = P [Expr]
   deriving (Eq,Show)
 
 type Var = String
-
-{-- data Wordy = Verb String
-          | Adj String
-          | Noun String
-          | Adverb String
-          | Pronoun String
-          | Prepisition String
-          | Conjunction String
-          | Interjection String
-          | Determiner String
-  deriving (Eq,Show)
---}
 
 data Expr = Sentence String
          | Num Int
@@ -53,13 +52,11 @@ data Expr = Sentence String
          | Reverse Expr
          | Insert Expr Expr Expr
          | Remove Expr Expr
-         | Capitalize Expr
+         -- | Capitalize Expr
          | Lowercase Expr
-         | IfElse Expr Expr Expr
          | Equ Expr Expr
-         -- | Compare String Sentence
+         | IfElse Expr Expr Expr
          -- | Contains Wordy Char
-         -- | IfElse Prog Prog
   deriving (Eq,Show)
 
 data Value
@@ -105,33 +102,54 @@ lowWord :: Expr -> Expr
 lowWord (Sentence []) = Sentence []
 lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
 
-sem :: Expr -> Value
-sem (Sentence x) = S x
-sem (Num x) = I x
---sem (Bind x y) =
-sem (Count x) = countWords x
-sem (Reverse x) = reverseSentence x
-sem (Insert z y x) = insertWord z y x
-sem (Equ y z)  = case (sem y, sem z) of
+cmd :: Expr -> Value
+cmd (Sentence x) = S x
+cmd (Num x) = I x
+--cmd (Bind x y) =
+cmd (Count x) = countWords x
+cmd (Reverse x) = reverseSentence x
+cmd (Insert z y x) = insertWord z y x
+cmd (Equ y z)  = case (cmd y, cmd z) of
                    (B a, B b) -> B (a == b)
                    (S i, S j) -> B (i == j)
                    _ -> Error
-sem (IfElse z y x) = case sem z of
-                   B True  -> sem y
-                   B False -> sem x
+cmd (IfElse z y x) = case cmd z of
+                   B True  -> cmd y
+                   B False -> cmd x
                    _ -> Error
 
 
---sem (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
+-- Syntactic Sugar
+
+true :: Expr
+true = Equ (Sentence "x y") (Sentence "x y")
+
+false :: Expr
+false = Equ (Sentence "x y") (Sentence "x y z")
+
+and :: Expr -> Expr -> Expr
+and l r = IfElse l r false
+
+or :: Expr -> Expr -> Expr
+or l r = IfElse l true r
 
 
 
 
 
--- Wordy Programs 
+-- Command Examples:
+
+--cmd (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
+
+
+
+
+
+-- Wordy Programs:
 
 -- a program to compare the number of words of one sentence to another, if same return True, if not return false
 
+--OLD 
 --compareWordCount :: String -> String -> Bool 
 --compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
 
