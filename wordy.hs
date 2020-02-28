@@ -135,29 +135,29 @@ false :: Expr
 false = Equ (Sentence "x y") (Sentence "x y z")
 
 and :: Expr -> Expr -> Expr
-and l r = IfElse l r false
+and x y = IfElse x y false
 
 or :: Expr -> Expr -> Expr
-or l r = IfElse l true r
+or x y = IfElse x true y
 
 
+
+--------------------------
 -- Command Examples:
 
 --cmd (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
 
-
-
 -- Wordy Programs:
 
--- a program to compare the number of words of one sentence to another, if same return True, if not return false
-
---OLD 
---compareWordCount :: String -> String -> Bool 
---compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
-
+-- a program that is still under development with the later implimentation of Bind
 --p1 :: Prog
 --p1 = P [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
       --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
+
+----------------------------
+
+
+-----------------Working Programs-------------
 
 
 -- a program to insert a period after every word of the sentence
@@ -165,7 +165,17 @@ or l r = IfElse l true r
 p2 :: Expr
 p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
--- Same but bad program
+-- Same but bad program where Insert is taking the String instead of Num
 
 p3 :: Expr
 p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
+
+-- a program that compares two string word counts to see if they are equal
+
+p4 :: Expr 
+p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
+
+-- Same but bad program, where Equ is comparing String and Num
+
+p5 :: Expr 
+p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
