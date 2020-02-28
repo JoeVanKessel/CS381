@@ -5,164 +5,171 @@ import Data.Char
 --
 
 -- Grammar for Wordy:
---
+
+
 --    word       ::= (any string)
 --    letter     ::= (any char)
 --    num        ::= (any integer)
 --    bool       ::= `true`  |  `false`
+
+
+
 --    prog       ::= cmd*
---    cmd        ::= word
---                 |  bool
+
+
+--    value     ::= string
+--                | int
+--                | bool
+--                | error
+
+--    cmd        ::= sentence
+--                 |  number
 --                 |  `count`
 --                 |  `reverse`
---                 |  `inWord`
---                 |  `if` prog `else` prog `end`
+--                 |  `insert`
+--                 |  `remove`
+--                 |  `if` cmd `else` cmd `end`
 --
-
 
 -- Program Examples
 
--- 1. Reverse a sentence
--- 2. Insert into a sentence
--- 3. Add/Remove from sentence
--- 4. Create a valid sentence out of words
--- 5. Check if two words are the same
+-- 1. Combine two sentences into one
+-- 2. comapre the length of two sentences
+-- 3.
+-- 4.
+-- 5.
 
 
--- 1. Encode the above grammar as a set of Haskell data types
-
-
---type Domain = Either Int String
---type SentenceList = [Wordy]
 data Prog = P [Expr]
   deriving (Eq,Show)
 
-type OneWord = String
-type Sentence = String
+type Var = String
 
-{-- data Wordy = Verb String
-          | Adj String
-          | Noun String
-          | Adverb String
-          | Pronoun String
-          | Prepisition String
-          | Conjunction String
-          | Interjection String
-          | Determiner String
-  deriving (Eq,Show)
---}
-data Expr = Sen String
-         | Count Sentence --expr
-         | Reverse Sentence
-         | Insert Int OneWord Sentence
-         | Remove OneWord Sentence
-         | Capitalize Sentence
-         | Lowercase Sentence
-         -- | Compare String Sentence
+data Expr = Sentence String
+         | Num Int
+         | Bind Expr Expr
+         | Count Expr
+         | Reverse Expr
+         | Insert Expr Expr Expr
+         | Remove Expr Expr
+         -- | Capitalize Expr
+         | Lowercase Expr
+         | Equ Expr Expr
+         | IfElse Expr Expr Expr
          -- | Contains Wordy Char
-         -- | IfElse Prog Prog
+  deriving (Eq,Show)
+
+data Value
+   = S String
+   | I Int
+   | B Bool
+   | Error
   deriving (Eq,Show)
 
 
+listString :: Expr -> [String]
+listString (Sentence givenString) = words givenString
 
-data Stmt = Bind String Expr
-          | If Expr Stmt Stmt
-          -- | While Expr Stmt
-          -- | Block [Stmt]
-  deriving (Eq,Show)
-
-
-stmt :: Stmt -> Expr
-stmt (Bind x y) = x
-            where x = y
+countWords :: Expr -> Value
+countWords (Sentence sentence) = I (length (listString (Sentence sentence)))
 
 
+reverseSentence :: Expr -> Value
+reverseSentence (Sentence sentence) = S (unwords (reverse (listString (Sentence sentence))))
+
+insertWord :: Expr -> Expr -> Expr -> Value
+insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ (word:list)))
+                  where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
 
-cmd :: Expr -> Sentence
---cmd (Count x) = countWords x
---cmd (Sen x sen) = let x = sen
-cmd (Insert x y z) = insertWord x y z
-cmd (Reverse x) = reverseSentence x
+--insertWord (Num 2) (Sentence "good") (Sentence "Today is a")
+-- capitalize :: Expr -> Expr
+-- capitalize [] = []
+-- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
+--                 where (single:list) = listString (Sentence sentence)
+-- 
+-- allCap:: String -> Expr
+-- allCap sentence = map toUpper (Sentence sentence)
+-- 
+-- allLow:: String -> Expr
+-- allLow sentence = map toLower (Sentence sentence)
 
---cmd (Insert w s i) = insert w s i
---insert :: Wordy -> Sentence -> Int -> Sentence
---insert w s i = let (ys, zs) = splitAt i s in ys ++ [w] ++ zs
+capWord :: Expr -> Expr
+capWord (Sentence []) = Sentence []
+capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
 
--- Insert (Adverb loudly) [(Noun tom), (Verb ran), (Adj fast)] 2
+lowWord :: Expr -> Expr
+lowWord (Sentence []) = Sentence []
+lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
 
-listString :: Sentence -> [Sentence]
-listString givenString = words givenString
-
-countWords :: Sentence -> Int
-countWords sentence = length (listString sentence)
-
-reverseSentence :: String -> Sentence
-reverseSentence sentence = unwords (reverse (listString sentence))
-
-insertWord :: Int -> OneWord -> Sentence -> Sentence 
-insertWord pos word wordList = unwords (atPos ++ (word:list))
-                  where (atPos,list) = splitAt pos (listString wordList)
-
-capitalize :: Sentence -> Sentence
-capitalize [] = []
-capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
-                where (single:list) = listString sentence
-
-allCap:: Sentence -> Sentence
-allCap sentence = map toUpper sentence
-
-allLow:: Sentence -> Sentence
-allLow sentence = map toLower sentence
-
-
-capWord :: Sentence -> Sentence
-capWord [] = []
-capWord (x:xs) = toUpper x : map toLower xs
+cmd :: Expr -> Value
+cmd (Sentence x) = S x
+cmd (Num x) = I x
+--cmd (Bind x y) =
+cmd (Count x) = case cmd x of
+                  S x' -> countWords (Sentence x')
+                  _    -> Error
+cmd (Reverse x) = case cmd x of
+                  S x' -> reverseSentence (Sentence x')
+                  _    -> Error
+cmd (Insert z y x) = case (cmd z, cmd y, cmd x) of 
+                  (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
+                  _                  -> Error
+cmd (Equ y z)  = case (cmd y, cmd z) of
+                  (B a, B b) -> B (a == b)
+                  (S i, S j) -> B (i == j)
+                  _          -> Error
+cmd (IfElse z y x) = case cmd z of
+                   B True  -> cmd y
+                   B False -> cmd x
+                   _       -> Error
 
 
-{---------------
-evalBool :: Expr -> Env Val -> Bool
-evalBool e m = case evalExpr e m of
-                 Right b -> b
-                 Left _  -> error "internal error: expected Bool got Int"
+-- Syntactic Sugar
 
-evalStmt :: Stmt -> Env Val -> Env Val
-evalStmt (If c st se) m = if evalBool c m
-                          then evalStmt st m
-                          else evalStmt se m
+true :: Expr
+true = Equ (Sentence "x y") (Sentence "x y")
 
--- Helper function to evaluate a list of statements. We could also
-evalStmts :: [Stmt] -> Env Val -> Env Val
-evalStmts []     m = m
-evalStmts (s:ss) m = evalStmts ss (evalStmt s m)
-----------------}
+false :: Expr
+false = Equ (Sentence "x y") (Sentence "x y z")
 
--- Wordy Programs 
+and :: Expr -> Expr -> Expr
+and l r = IfElse l r false
+
+or :: Expr -> Expr -> Expr
+or l r = IfElse l true r
+
+
+
+
+
+-- Command Examples:
+
+--cmd (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
+
+
+
+
+
+-- Wordy Programs:
 
 -- a program to compare the number of words of one sentence to another, if same return True, if not return false
 
-compareWordCount :: String -> String -> Bool 
-compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
+--OLD 
+--compareWordCount :: String -> String -> Bool 
+--compareWordCount sentence sentence2 = (countWords sentence) == (countWords sentence2) 
 
-p1 :: Prog
-p1 = P []
-
-
-
-
+--p1 :: Prog
+--p1 = P [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
+      --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
 
 
+-- a program to insert a period after every word of the sentence
 
+p2 :: Expr
+p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
+-- Same but bad program
 
-
-
-
-
-
-
-
---safeDiv :: Float -> Float -> Either String Float
---safeDiv x 0 = Left "Divison by zero"
---safeDiv x y = Right (x / y)
+p3 :: Expr
+p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
