@@ -6,14 +6,6 @@ import Data.Char
 
 -- Grammar for Wordy:
 
-
---    word       ::= (any string)
---    letter     ::= (any char)
---    num        ::= (any integer)
---    bool       ::= `true`  |  `false`
-
-
-
 --    prog       ::= cmd*
 
 
@@ -24,43 +16,35 @@ import Data.Char
 
 --    cmd        ::= sentence
 --                 |  number
---                 |  `count`
---                 |  `reverse`
---                 |  `insert`
---                 |  `remove`
---                 |  `if` cmd `else` cmd `end`
+--                 |  `bind` expr
+--                 |  `count` expr
+--                 |  `reverse` expr
+--                 |  `insert` expr
+--                 |  `remove` expr
+--                 |  `if` expr expr `else` expr
 --
 
--- Program Examples
-
--- 1. Combine two sentences into one
--- 2. comapre the length of two sentences
--- 3.
--- 4.
--- 5.
 
 
-data Prog = P [Expr]
-  deriving (Eq,Show)
+type Prog = [Expr]
 
-type Var = String
 
 data Expr = Sentence String
          | Num Int
-         | Bind Expr Expr
+        --  | Bind Expr Expr (WIP)
          | Count Expr
+         | Split Expr Expr
          | Reverse Expr
          | Insert Expr Expr Expr
-         | Remove Expr Expr
-         -- | Capitalize Expr
-         | Lowercase Expr
+        --  | Remove Expr Expr (WIP)
          | Equ Expr Expr
          | IfElse Expr Expr Expr
-         -- | Contains Wordy Char
+        --  | While Expr Expr (WIP)
   deriving (Eq,Show)
 
 data Value
    = S String
+   | L [String]
    | I Int
    | B Bool
    | Error
@@ -82,7 +66,6 @@ insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ 
                   where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
 
---insertWord (Num 2) (Sentence "good") (Sentence "Today is a")
 -- capitalize :: Expr -> Expr
 -- capitalize [] = []
 -- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
