@@ -106,23 +106,24 @@ cmd :: Expr -> Value
 cmd (Sentence x) = S x
 cmd (Num x) = I x
 --cmd (Bind x y) =
-cmd (Count x) = case cmd x of
-                  S x' -> countWords (Sentence x')
-                  _    -> Error
-cmd (Reverse x) = case cmd x of
-                  S x' -> reverseSentence (Sentence x')
-                  _    -> Error
+cmd (Count x)      = case cmd x of
+                          S x' -> countWords (Sentence x')
+                          _    -> Error
+cmd (Reverse x)    = case cmd x of
+                          S x' -> reverseSentence (Sentence x')
+                          _    -> Error
 cmd (Insert z y x) = case (cmd z, cmd y, cmd x) of 
-                  (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
-                  _                  -> Error
-cmd (Equ y z)  = case (cmd y, cmd z) of
-                  (B a, B b) -> B (a == b)
-                  (S i, S j) -> B (i == j)
-                  _          -> Error
+                          (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
+                          _                  -> Error
+cmd (Equ y z)      = case (cmd y, cmd z) of
+                          (I a, I b) -> B (a == b)
+                          (B a, B b) -> B (a == b)
+                          (S i, S j) -> B (i == j)
+                          _          -> Error
 cmd (IfElse z y x) = case cmd z of
-                   B True  -> cmd y
-                   B False -> cmd x
-                   _       -> Error
+                          B True  -> cmd y
+                          B False -> cmd x
+                          _       -> Error
 
 
 -- Syntactic Sugar
@@ -140,14 +141,9 @@ or :: Expr -> Expr -> Expr
 or l r = IfElse l true r
 
 
-
-
-
 -- Command Examples:
 
 --cmd (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
-
-
 
 
 
