@@ -106,17 +106,23 @@ cmd :: Expr -> Value
 cmd (Sentence x) = S x
 cmd (Num x) = I x
 --cmd (Bind x y) =
-cmd (Count x) = countWords x
-cmd (Reverse x) = reverseSentence x
-cmd (Insert z y x) = insertWord z y x
+cmd (Count x) = case cmd x of
+                  S x' -> countWords (Sentence x')
+                  _    -> Error
+cmd (Reverse x) = case cmd x of
+                  S x' -> reverseSentence (Sentence x')
+                  _    -> Error
+cmd (Insert z y x) = case (cmd z, cmd y, cmd x) of 
+                  (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
+                  _                  -> Error
 cmd (Equ y z)  = case (cmd y, cmd z) of
-                   (B a, B b) -> B (a == b)
-                   (S i, S j) -> B (i == j)
-                   _ -> Error
+                  (B a, B b) -> B (a == b)
+                  (S i, S j) -> B (i == j)
+                  _          -> Error
 cmd (IfElse z y x) = case cmd z of
                    B True  -> cmd y
                    B False -> cmd x
-                   _ -> Error
+                   _       -> Error
 
 
 -- Syntactic Sugar
@@ -160,10 +166,10 @@ or l r = IfElse l true r
 
 -- a program to insert a period after every word of the sentence
 
-p2 :: Prog
-p2 = P [(Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a "))]
+p2 :: Expr
+p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
 -- Same but bad program
 
-p3 :: Prog
-p3 = P [(Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a "))]
+p3 :: Expr
+p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
