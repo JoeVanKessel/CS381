@@ -36,10 +36,11 @@ data Expr = Sentence String
          | Split Expr
          | Reverse Expr
          | Insert Expr Expr Expr
-        --  | Remove Expr Expr (WIP)
+         | Remove Expr Expr
          | Equ Expr Expr
          | IfElse Expr Expr Expr
         --  | While Expr Expr (WIP)
+        | Cap Expr
   deriving (Eq,Show)
 
 data Value
@@ -95,9 +96,9 @@ _removeWord num (x:xs) | num >= 0 = x : (_removeWord (num - 1) xs)
 -- allLow:: String -> Expr
 -- allLow sentence = map toLower (Sentence sentence)
 
-capWord :: Expr -> Expr
-capWord (Sentence []) = Sentence []
-capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
+capWord :: Expr -> Value
+capWord (Sentence []) = S []
+capWord (Sentence (x:xs)) = S (toUpper x : map toLower xs)
 
 lowWord :: Expr -> Expr
 lowWord (Sentence []) = Sentence []
@@ -116,6 +117,9 @@ cmd (Reverse x)    = case cmd x of
 cmd (Insert z y x) = case (cmd z, cmd y, cmd x) of 
                           (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
                           _                  -> Error
+cmd (Remove x y)   = case (cmd x, cmd y) of
+                          (I x', S y') -> removeWord (Num x') (Sentence y')     
+                          _ -> Error
 cmd (Equ y z)      = case (cmd y, cmd z) of
                           (I a, I b) -> B (a == b)
                           (B a, B b) -> B (a == b)
@@ -126,14 +130,12 @@ cmd (IfElse z y x) = case cmd z of
                           B False -> cmd x
                           _       -> Error
 cmd (Split x)      = case cmd x of 
-                        S x' -> split (Sentence x')
-                        
+                          S x' -> split (Sentence x')
+cmd (Cap x)        = case cmd x of 
+                        S x' -> capWord (Sentence x') 
 
-
-
-
-capitalize :: Expr -> Expr
-capitalize (Sentence x) = capWord (split (Sentence x))
+--capitalize :: Expr
+--capitalize (Sentence x) = Cap (Sentence (Split (Sentence x)))
 
 -- Syntactic Sugar
 
