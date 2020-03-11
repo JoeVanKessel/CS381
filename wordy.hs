@@ -27,10 +27,11 @@ import Data.Char
 
 
 type Prog = [Expr]
-
+type Var = String
 
 data Expr = Sentence String
          | Num Int
+         -- | Ref Value
         --  | Bind Expr Expr (WIP)
          | Count Expr
          | Split Expr Expr
@@ -38,8 +39,14 @@ data Expr = Sentence String
          | Insert Expr Expr Expr
         --  | Remove Expr Expr (WIP)
          | Equ Expr Expr
-         | IfElse Expr Expr Expr
+         -- | IfElse Expr stmt stmt
         --  | While Expr Expr (WIP)
+  deriving (Eq,Show)
+
+data Stmt = Bind Var Expr
+          | IfElse Expr Stmt Stmt
+          | While Expr Stmt
+          | Block [Stmt]
   deriving (Eq,Show)
 
 data Value
@@ -108,6 +115,15 @@ cmd (IfElse z y x) = case cmd z of
                           B False -> cmd x
                           _       -> Error
 
+evalStmt :: Stmt -> Env Val -> Env Val
+evalStmt (Bind x e)   m = insert x (evalExpr e m) m
+evalStmt (If c st se) m = if evalBool c m
+                          then evalStmt st m
+                          else evalStmt se m
+evalStmt (While c sb) m = if evalBool c m
+                          then evalStmt (While c sb) (evalStmt sb m)
+                          else m
+evalStmt (Block ss)   m = evalStmts ss m
 
 -- Syntactic Sugar
 
@@ -143,22 +159,22 @@ or x y = IfElse x true y
 -----------------Working Programs-------------
 
 
--- a program to insert a period after every word of the sentence
+-- -- a program to insert a period after every word of the sentence
 
-p2 :: Expr
-p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
+-- p2 :: Expr
+-- p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
--- Same but bad program where Insert is taking the String instead of Num
+-- -- Same but bad program where Insert is taking the String instead of Num
 
-p3 :: Expr
-p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
+-- p3 :: Expr
+-- p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
--- a program that compares two string word counts to see if they are equal
+-- -- a program that compares two string word counts to see if they are equal
 
-p4 :: Expr 
-p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
+-- p4 :: Expr 
+-- p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
 
--- Same but bad program, where Equ is comparing String and Num
+-- -- Same but bad program, where Equ is comparing String and Num
 
-p5 :: Expr 
-p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
+-- p5 :: Expr 
+-- p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
