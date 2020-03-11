@@ -40,9 +40,9 @@ data Type = TInt | TBool | TString | Error String
 
 data Expr = Sentence String
          | Num Int
-         | Let Var Expr   --Defined Variable (Let "x" (Num 1))
+         | Let Var Expr Expr  --Defined Variable (Let "x" (Num 1))
          | Ref Var        --
-         | Fun [Expr] Expr
+         | Fun Var Expr
          | App Expr Expr
          | Count Expr
          | Split Expr
@@ -66,7 +66,7 @@ data Value
    | L [String]
    | I Int
    | B Bool
-   | F [Expr] Expr
+   | F Var Expr
    | RuntimeError
   deriving (Eq,Show)
 
@@ -130,8 +130,9 @@ lowWord (Sentence []) = S []
 lowWord (Sentence (x:xs)) = S (toLower x : map toLower xs)
 
 type Env a = [(Var,a)]
+  deriving(Eq,Show)
 
-cmd :: Expr -> Env Value  ->Value
+cmd :: Expr -> Env Value -> Value
 cmd (Sentence x) _   = S x
 cmd (Num x) _        = I x
 cmd (Count x)      m = case cmd x m of
@@ -151,7 +152,9 @@ cmd (Equ y z)      m= case (cmd y m, cmd z m) of
                           (B a, B b) -> B (a == b)
                           (S i, S j) -> B (i == j)
                           _          -> RuntimeError
-cmd (Fun xs e)     _ = F xs e
+cmd (Let x b e) m = case cmd b m of
+                    v -> cmd e ((x,v):m)
+cmd (Fun x e)     _ = F x e
 cmd (App l r)      m = case (cmd l m,cmd r m) of 
                       (F x e,v) -> cmd e ((x,v):m)
 cmd (Ref x)        m= fromJust(lookup x m)
@@ -237,8 +240,8 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
 
 -- -- a program to insert a period after every word of the sentence
 
--- p2 :: Expr
--- p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
+p2 :: Expr
+p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
 -- -- Same but bad program where Insert is taking the String instead of Num
 
