@@ -1,9 +1,11 @@
 module Wordy where
 
-import Data.Map (Map,fromList,lookup,insert)
+
 import Data.Maybe (fromJust)
 import Data.Char
-import Prelude hiding (lookup)
+-- import Data.Map (Map,fromList,lookup,insert)
+
+-- import Prelude hiding (lookup)
 --
 -- * Syntax of Wordy
 --
@@ -33,39 +35,46 @@ import Prelude hiding (lookup)
 type Prog = [Expr]
 type Var = String
 
+data Type = TInt | TBool | TString | Error String
+    deriving (Eq, Show)
+
 data Expr = Sentence String
          | Num Int
-         | Ref Value
-        --  | Bind Expr Expr (WIP)
+         | Let Var Expr   --Defined Variable (Let "x" (Num 1))
+         | Ref Var        --
+         | Fun [Expr] Expr
+         | App Expr Expr
          | Count Expr
-         | Split Expr Expr
+        -- | Split Expr Expr
          | Reverse Expr
          | Insert Expr Expr Expr
         --  | Remove Expr Expr (WIP)
          | Equ Expr Expr
-         -- | IfElse Expr stmt stmt
+         | IfElse Expr Expr Expr
         --  | While Expr Expr (WIP)
   deriving (Eq,Show)
 
-data Stmt = Bind Var Expr
-          | IfElse Expr Stmt Stmt
-          | While Expr Stmt
-          | Block [Stmt]
-  deriving (Eq,Show)
+-- data Stmt = Bind Var Expr
+--           | IfElse Expr Stmt Stmt
+--           | While Expr Stmt
+--           | Block [Stmt]
+--   deriving (Eq,Show)
 
 data Value
    = S String
    | L [String]
    | I Int
    | B Bool
-   | Error
+   | F [Var] Expr
+   | RuntimeError
   deriving (Eq,Show)
 
-type Decl = (Var,Type)
-data Prog = P [Decl] Stmt
-  deriving (Eq,Show)
 
-type Env a = Map Var a
+-- type Decl = (Var,Type)
+-- data Prog = P [Decl] Stmt
+--   deriving (Eq,Show)
+
+-- type Env a = Map Var a
 
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
@@ -101,42 +110,49 @@ lowWord :: Expr -> Expr
 lowWord (Sentence []) = Sentence []
 lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
 
-cmd :: Expr -> Value
-cmd (Sentence x) = S x
-cmd (Num x) = I x
---cmd (Bind x y) =
-cmd (Count x)      = case cmd x of
+type Env a = [(Var,a)]
+
+cmd :: Expr -> Env Value  ->Value
+cmd (Sentence x) _   = S x
+cmd (Num x) _        = I x
+cmd (Count x)      m = case cmd x of
                           S x' -> countWords (Sentence x')
                           _    -> Error
-cmd (Reverse x)    = case cmd x of
+cmd (Reverse x)    m= case cmd x of
                           S x' -> reverseSentence (Sentence x')
                           _    -> Error
-cmd (Insert z y x) = case (cmd z, cmd y, cmd x) of 
+cmd (Insert z y x) m= case (cmd z, cmd y, cmd x) of 
                           (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
                           _                  -> Error
-cmd (Equ y z)      = case (cmd y, cmd z) of
+cmd (Equ y z)      m= case (cmd y, cmd z) of
                           (I a, I b) -> B (a == b)
                           (B a, B b) -> B (a == b)
                           (S i, S j) -> B (i == j)
                           _          -> Error
-cmd (Ref x)       = 
--- cmd (IfElse z y x) = case cmd z of
---                           B True  -> cmd y
---                           B False -> cmd x
---                           _       -> Error
+cmd (Fun xs e)     m= F xs e
+cmd (App l r)      m= case (cmd l m,cmd r m) of 
+                      (F x e,v) -> cmd e ((x,v):m)
+cmd (Ref x)        m= fromJust(lookup x m)
+cmd (IfElse z y x) m= case cmd z of
+                          B True  -> cmd y
+                          B False -> cmd x
+                          _       -> Error
 
-evalString :: Expr -> Env Val -> String
-evalString e m = case of 
+-- Various semantics
 
-evalStmt :: Stmt -> Env Val -> Env Val
-evalStmt (Bind x e)   m = insert x (evalExpr e m) m
-evalStmt (If c st se) m = if evalBool c m
-                          then evalStmt st m
-                          else evalStmt se m
-evalStmt (While c sb) m = if evalBool c m
-                          then evalStmt (While c sb) (evalStmt sb m)
-                          else m
-evalStmt (Block ss)   m = evalStmts ss m
+-- type Env a = [(Var,a)]
+
+-- data DVal
+--   = DI Int      -- integers
+--   | Ds String
+--   | DF Var Exp  -- functions
+--  deriving (Eq,Show)
+
+-- dsem :: Exp -> Env DVal -> Value
+-- dsem (Lit i) = DI i
+-- dsem (Sentence s) = DS s
+-- dsem (Count e) = case (dsem e) of
+--                   DS  
 
 -- Syntactic Sugar
 
@@ -151,6 +167,36 @@ and x y = IfElse x y false
 
 or :: Expr -> Expr -> Expr
 or x y = IfElse x true y
+
+
+typeExpr :: Expr -> Env Var -> Type
+typeExpr (Num _) _ = TInt
+typeExpr (Sentence _) m = TString
+typeExpr (Count x) m = case typeExpr x m of 
+                        TString -> TString
+                        _       -> Error "Type Error"
+typeExpr (Reverse x) m = case typeExpr x m of 
+                        TString -> TString
+                        _       -> Error "Type Error"
+typeExpr (Insert i s1 s2) m = case (typeExpr i m, typeExpr s1 m, typeExpr s2 m) of
+                              (TInt, TString, TString) -> TString
+                              _                        -> Error "Type Error"
+typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
+                        (TInt, TInt)       -> TBool
+                        (TBool, TBool)     -> TBool
+                        (TString, TString) -> TBool
+                        _                  -> Error "Type Error"
+typeExpr (App l r) m = case(typeExpr l m, typeExpr r m) of
+                       
+
+
+
+
+
+
+
+
+
 
 
 
