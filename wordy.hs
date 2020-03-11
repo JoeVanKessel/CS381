@@ -41,6 +41,7 @@ data Expr = Sentence String
          | IfElse Expr Expr Expr
         --  | While Expr Expr (WIP)
         | Cap Expr
+        | Low Expr
   deriving (Eq,Show)
 
 data Value
@@ -100,9 +101,9 @@ capWord :: Expr -> Value
 capWord (Sentence []) = S []
 capWord (Sentence (x:xs)) = S (toUpper x : map toLower xs)
 
-lowWord :: Expr -> Expr
-lowWord (Sentence []) = Sentence []
-lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
+lowWord :: Expr -> Value
+lowWord (Sentence []) = S []
+lowWord (Sentence (x:xs)) = S (toLower x : map toLower xs)
 
 cmd :: Expr -> Value
 cmd (Sentence x) = S x
@@ -131,8 +132,14 @@ cmd (IfElse z y x) = case cmd z of
                           _       -> Error
 cmd (Split x)      = case cmd x of 
                           S x' -> split (Sentence x')
+                          _       -> Error
 cmd (Cap x)        = case cmd x of 
-                        S x' -> capWord (Sentence x') 
+                          S x' -> capWord (Sentence x')
+                          _       -> Error
+cmd (Low x)        = case cmd x of 
+                          S x' -> lowWord (Sentence x')
+                          _       -> Error
+
 
 --capitalize :: Expr
 --capitalize (Sentence x) = Cap (Sentence (Split (Sentence x)))
