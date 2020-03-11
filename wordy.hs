@@ -65,6 +65,21 @@ insertWord :: Expr -> Expr -> Expr -> Value
 insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ (word:list)))
                   where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
+removeWord :: Expr -> Expr -> Value
+removeWord (Num pos) (Sentence sentence) = S (unwords (_removeWord pos (listString (Sentence sentence))))
+
+_removeWord :: Int -> [a] -> [a]
+_removeWord 0 (x:xs) = xs
+_removeWord num (x:xs) | num >= 0 = x : (_removeWord (num - 1) xs)
+
+
+
+
+
+--f :: [a] -> [a]
+--f [] = []
+--f xs = let (h, t) = splitAt 5 xs in h ++ f (drop 3 t)
+
 
 -- capitalize :: Expr -> Expr
 -- capitalize [] = []
