@@ -51,9 +51,8 @@ data Expr = Sentence String
          | Remove Expr Expr
          | Equ Expr Expr
          | IfElse Expr Expr Expr
-        --  | While Expr Expr (WIP)
-        | Cap Expr
-        | Low Expr
+         | Cap Expr
+         | Low Expr
   deriving (Eq,Show)
 
 -- data Stmt = Bind Var Expr
@@ -67,7 +66,7 @@ data Value
    | L [String]
    | I Int
    | B Bool
-   | F [Var] Expr
+   | F [Expr] Expr
    | RuntimeError
   deriving (Eq,Show)
 
@@ -100,7 +99,7 @@ removeWord (Num pos) (Sentence sentence) = S (unwords (_removeWord pos (listStri
 
 _removeWord :: Int -> [a] -> [a]
 _removeWord 0 (x:xs) = xs
-_removeWord num (x:xs) | num >= 0 = x : (_removeWord (num - 1) xs)
+_removeWord num (x:xs) | num >= 0 = x : _removeWord (num - 1) xs
 
 
 
@@ -135,40 +134,40 @@ type Env a = [(Var,a)]
 cmd :: Expr -> Env Value  ->Value
 cmd (Sentence x) _   = S x
 cmd (Num x) _        = I x
-cmd (Count x)      m = case cmd x of
+cmd (Count x)      m = case cmd x m of
                           S x' -> countWords (Sentence x')
-                          _    -> Error
-cmd (Reverse x)    m= case cmd x of
+                          _    -> RuntimeError
+cmd (Reverse x)    m= case cmd x m of
                           S x' -> reverseSentence (Sentence x')
-                          _    -> Error
-cmd (Insert z y x) m= case (cmd z, cmd y, cmd x) of 
+                          _    -> RuntimeError
+cmd (Insert z y x) m= case (cmd z m, cmd y m, cmd x m) of 
                           (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
-                          _                  -> Error
-cmd (Remove x y)    = case (cmd x, cmd y) of
+                          _                  -> RuntimeError
+cmd (Remove x y)    m= case (cmd x m, cmd y m) of
                           (I x', S y') -> removeWord (Num x') (Sentence y')     
-                          _ -> Error
-cmd (Equ y z)      m= case (cmd y, cmd z) of
+                          _ -> RuntimeError
+cmd (Equ y z)      m= case (cmd y m, cmd z m) of
                           (I a, I b) -> B (a == b)
                           (B a, B b) -> B (a == b)
                           (S i, S j) -> B (i == j)
-                          _          -> Error
-cmd (Fun xs e)     m= F xs e
-cmd (App l r)      m= case (cmd l m,cmd r m) of 
+                          _          -> RuntimeError
+cmd (Fun xs e)     _ = F xs e
+cmd (App l r)      m = case (cmd l m,cmd r m) of 
                       (F x e,v) -> cmd e ((x,v):m)
 cmd (Ref x)        m= fromJust(lookup x m)
-cmd (IfElse z y x) m= case cmd z of
-                          B True  -> cmd y
-                          B False -> cmd x
-                          _       -> Error
-cmd (Split x)      m= case cmd x of 
+cmd (IfElse z y x) m= case cmd z m of
+                          B True  -> cmd y m
+                          B False -> cmd x m
+                          _       -> RuntimeError
+cmd (Split x)      m= case cmd x m of 
                           S x' -> split (Sentence x')
-                          _       -> Error
-cmd (Cap x)        m= case cmd x of 
+                          _       -> RuntimeError
+cmd (Cap x)        m= case cmd x m of 
                           S x' -> capWord (Sentence x')
-                          _       -> Error
-cmd (Low x)        m= case cmd x of 
+                          _       -> RuntimeError
+cmd (Low x)        m= case cmd x m of 
                           S x' -> lowWord (Sentence x')
-                          _       -> Error
+                          _       -> RuntimeError
 
 
 --capitalize :: Expr
