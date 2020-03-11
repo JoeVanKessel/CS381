@@ -168,7 +168,6 @@ and x y = IfElse x y false
 or :: Expr -> Expr -> Expr
 or x y = IfElse x true y
 
-
 typeExpr :: Expr -> Env Var -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) m = TString
@@ -186,8 +185,7 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TBool, TBool)     -> TBool
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
-typeExpr (App l r) m = case(typeExpr l m, typeExpr r m) of
-                       
+
 
 
 
