@@ -130,7 +130,6 @@ lowWord (Sentence []) = S []
 lowWord (Sentence (x:xs)) = S (toLower x : map toLower xs)
 
 type Env a = [(Var,a)]
-  deriving(Eq,Show)
 
 cmd :: Expr -> Env Value -> Value
 cmd (Sentence x) _   = S x
@@ -220,6 +219,7 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
 
 
 
+
 --------------------------
 -- Command Examples:
 
@@ -257,3 +257,10 @@ p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "To
 
 -- p5 :: Expr 
 -- p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
+
+p6 :: Expr
+p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
+
+-- p7 :: Expr
+-- p7 = Let "a" (Num 233) (Num 123)
+ 
