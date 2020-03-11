@@ -1,5 +1,9 @@
 module Wordy where
+
+import Data.Map (Map,fromList,lookup,insert)
+import Data.Maybe (fromJust)
 import Data.Char
+import Prelude hiding (lookup)
 --
 -- * Syntax of Wordy
 --
@@ -57,6 +61,11 @@ data Value
    | Error
   deriving (Eq,Show)
 
+type Decl = (Var,Type)
+data Prog = P [Decl] Stmt
+  deriving (Eq,Show)
+
+type Env a = Map Var a
 
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
@@ -110,10 +119,10 @@ cmd (Equ y z)      = case (cmd y, cmd z) of
                           (B a, B b) -> B (a == b)
                           (S i, S j) -> B (i == j)
                           _          -> Error
-cmd (IfElse z y x) = case cmd z of
-                          B True  -> cmd y
-                          B False -> cmd x
-                          _       -> Error
+-- cmd (IfElse z y x) = case cmd z of
+--                           B True  -> cmd y
+--                           B False -> cmd x
+--                           _       -> Error
 
 evalStmt :: Stmt -> Env Val -> Env Val
 evalStmt (Bind x e)   m = insert x (evalExpr e m) m
