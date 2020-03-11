@@ -33,7 +33,7 @@ data Expr = Sentence String
          | Num Int
         --  | Bind Expr Expr (WIP)
          | Count Expr
-         | Split Expr Expr
+         | Split Expr
          | Reverse Expr
          | Insert Expr Expr Expr
         --  | Remove Expr Expr (WIP)
@@ -53,6 +53,9 @@ data Value
 
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
+
+split :: Expr -> Value
+split (Sentence givenString) = L (words givenString)
 
 countWords :: Expr -> Value
 countWords (Sentence sentence) = I (length (listString (Sentence sentence)))
@@ -122,7 +125,15 @@ cmd (IfElse z y x) = case cmd z of
                           B True  -> cmd y
                           B False -> cmd x
                           _       -> Error
+cmd (Split x)      = case cmd x of 
+                        S x' -> split (Sentence x')
+                        
 
+
+
+
+capitalize :: Expr -> Expr
+capitalize (Sentence x) = capWord (split (Sentence x))
 
 -- Syntactic Sugar
 
