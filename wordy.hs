@@ -45,13 +45,15 @@ data Expr = Sentence String
          | Fun [Expr] Expr
          | App Expr Expr
          | Count Expr
-        -- | Split Expr Expr
+         | Split Expr
          | Reverse Expr
          | Insert Expr Expr Expr
-        --  | Remove Expr Expr (WIP)
+         | Remove Expr Expr
          | Equ Expr Expr
          | IfElse Expr Expr Expr
         --  | While Expr Expr (WIP)
+        | Cap Expr
+        | Low Expr
   deriving (Eq,Show)
 
 -- data Stmt = Bind Var Expr
@@ -79,6 +81,9 @@ data Value
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
 
+split :: Expr -> Value
+split (Sentence givenString) = L (words givenString)
+
 countWords :: Expr -> Value
 countWords (Sentence sentence) = I (length (listString (Sentence sentence)))
 
@@ -89,6 +94,21 @@ reverseSentence (Sentence sentence) = S (unwords (reverse (listString (Sentence 
 insertWord :: Expr -> Expr -> Expr -> Value
 insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ (word:list)))
                   where (atPos,list) = splitAt pos (listString (Sentence sentence))
+
+removeWord :: Expr -> Expr -> Value
+removeWord (Num pos) (Sentence sentence) = S (unwords (_removeWord pos (listString (Sentence sentence))))
+
+_removeWord :: Int -> [a] -> [a]
+_removeWord 0 (x:xs) = xs
+_removeWord num (x:xs) | num >= 0 = x : (_removeWord (num - 1) xs)
+
+
+
+
+
+--f :: [a] -> [a]
+--f [] = []
+--f xs = let (h, t) = splitAt 5 xs in h ++ f (drop 3 t)
 
 
 -- capitalize :: Expr -> Expr
@@ -102,13 +122,13 @@ insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ 
 -- allLow:: String -> Expr
 -- allLow sentence = map toLower (Sentence sentence)
 
-capWord :: Expr -> Expr
-capWord (Sentence []) = Sentence []
-capWord (Sentence (x:xs)) = Sentence (toUpper x : map toLower xs)
+capWord :: Expr -> Value
+capWord (Sentence []) = S []
+capWord (Sentence (x:xs)) = S (toUpper x : map toLower xs)
 
-lowWord :: Expr -> Expr
-lowWord (Sentence []) = Sentence []
-lowWord (Sentence (x:xs)) = Sentence (toLower x : map toLower xs)
+lowWord :: Expr -> Value
+lowWord (Sentence []) = S []
+lowWord (Sentence (x:xs)) = S (toLower x : map toLower xs)
 
 type Env a = [(Var,a)]
 
@@ -124,6 +144,9 @@ cmd (Reverse x)    m= case cmd x of
 cmd (Insert z y x) m= case (cmd z, cmd y, cmd x) of 
                           (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
                           _                  -> Error
+cmd (Remove x y)    = case (cmd x, cmd y) of
+                          (I x', S y') -> removeWord (Num x') (Sentence y')     
+                          _ -> Error
 cmd (Equ y z)      m= case (cmd y, cmd z) of
                           (I a, I b) -> B (a == b)
                           (B a, B b) -> B (a == b)
@@ -137,22 +160,19 @@ cmd (IfElse z y x) m= case cmd z of
                           B True  -> cmd y
                           B False -> cmd x
                           _       -> Error
+cmd (Split x)      m= case cmd x of 
+                          S x' -> split (Sentence x')
+                          _       -> Error
+cmd (Cap x)        m= case cmd x of 
+                          S x' -> capWord (Sentence x')
+                          _       -> Error
+cmd (Low x)        m= case cmd x of 
+                          S x' -> lowWord (Sentence x')
+                          _       -> Error
 
--- Various semantics
 
--- type Env a = [(Var,a)]
-
--- data DVal
---   = DI Int      -- integers
---   | Ds String
---   | DF Var Exp  -- functions
---  deriving (Eq,Show)
-
--- dsem :: Exp -> Env DVal -> Value
--- dsem (Lit i) = DI i
--- dsem (Sentence s) = DS s
--- dsem (Count e) = case (dsem e) of
---                   DS  
+--capitalize :: Expr
+--capitalize (Sentence x) = Cap (Sentence (Split (Sentence x)))
 
 -- Syntactic Sugar
 
