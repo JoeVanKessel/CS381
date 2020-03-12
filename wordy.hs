@@ -40,19 +40,19 @@ data Type = TInt | TBool | TString | TFun | Error String
 
 data Expr = Sentence String
          | Num Int
-         | Let Var Expr Expr  --Defined Variable (Let "x" (Num 1))
-         | Ref Var        --
-         | Fun Var Expr
-         | App Expr Expr
          | Count Expr
          | Split Expr
+         | Cap Expr
+         | Low Expr
          | Reverse Expr
          | Insert Expr Expr Expr
          | Remove Expr Expr
+         | Let Var Expr Expr
+         | Ref Var
+         | Fun Var Expr
+         | App Expr Expr
          | Equ Expr Expr
          | IfElse Expr Expr Expr
-         | Cap Expr
-         | Low Expr
   deriving (Eq,Show)
 
 -- data Stmt = Bind Var Expr
