@@ -222,8 +222,6 @@ typeExpr (Cap x)        m = case typeExpr x m of
 typeExpr (Low x)      m = case typeExpr x m of 
                         TString -> TString
                         _                  -> Error "Type Error"
-
-typeProg::Prog -> Env Value -> Bool
 typeExpr (IfElse x y z) m = case typeExpr x m of
                               TBool -> TBool
                               _     -> Error "Type Error"
