@@ -206,9 +206,14 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TBool, TBool)     -> TBool
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
-
-
-
+typeExpr (Split x)      m = case typeExpr x m of 
+                        TString -> TString
+                        _                  -> Error "Type Error"
+typeExpr (Cap x)        m = case typeExpr x m of 
+                        _                  -> Error "Type Error"
+typeExpr (Low x)      m = case typeExpr x m of 
+                        TString -> TString
+                        _                  -> Error "Type Error"
 
 
 
@@ -262,5 +267,5 @@ p6 :: Expr
 p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
 
 -- p7 :: Expr
--- p7 = Let "a" (Num 233) (Num 123)
+-- p7 = Let "a" (Num 233) (Fun "x" Ref)
  
