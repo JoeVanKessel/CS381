@@ -35,7 +35,7 @@ import Data.Char
 type Prog = [Expr]
 type Var = String
 
-data Type = TInt | TBool | TString | Error String
+data Type = TInt | TBool | TString | TFun | Error String
     deriving (Eq, Show)
 
 data Expr = Sentence String
@@ -68,6 +68,7 @@ data Value
    | B Bool
    | F Var Expr
    | RuntimeError
+   | ErrorVal String
   deriving (Eq,Show)
 
 
@@ -77,23 +78,29 @@ data Value
 
 -- type Env a = Map Var a
 
+
+-- A helper function to split a string into a list of strings
 listString :: Expr -> [String]
 listString (Sentence givenString) = words givenString
 
+-- Imp of the split in the expr level
 split :: Expr -> Value
 split (Sentence givenString) = L (words givenString)
 
+-- Function to count the words in a given string
 countWords :: Expr -> Value
 countWords (Sentence sentence) = I (length (listString (Sentence sentence)))
 
-
+-- Function to reverse a given string
 reverseSentence :: Expr -> Value
 reverseSentence (Sentence sentence) = S (unwords (reverse (listString (Sentence sentence))))
 
+-- Function to insert a string into another string at a given position.
 insertWord :: Expr -> Expr -> Expr -> Value
 insertWord (Num pos) (Sentence word) (Sentence sentence) = S (unwords (atPos ++ (word:list)))
                   where (atPos,list) = splitAt pos (listString (Sentence sentence))
 
+-- Function to remove a word from a specified location
 removeWord :: Expr -> Expr -> Value
 removeWord (Num pos) (Sentence sentence) = S (unwords (_removeWord pos (listString (Sentence sentence))))
 
@@ -101,36 +108,20 @@ _removeWord :: Int -> [a] -> [a]
 _removeWord 0 (x:xs) = xs
 _removeWord num (x:xs) | num >= 0 = x : _removeWord (num - 1) xs
 
-
-
-
-
---f :: [a] -> [a]
---f [] = []
---f xs = let (h, t) = splitAt 5 xs in h ++ f (drop 3 t)
-
-
--- capitalize :: Expr -> Expr
--- capitalize [] = []
--- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
---                 where (single:list) = listString (Sentence sentence)
--- 
--- allCap:: String -> Expr
--- allCap sentence = map toUpper (Sentence sentence)
--- 
--- allLow:: String -> Expr
--- allLow sentence = map toLower (Sentence sentence)
-
+-- Function to capitilize the first letter of the string
 capWord :: Expr -> Value
 capWord (Sentence []) = S []
 capWord (Sentence (x:xs)) = S (toUpper x : map toLower xs)
 
+-- Function to lowercase the first letter of every string
 lowWord :: Expr -> Value
 lowWord (Sentence []) = S []
 lowWord (Sentence (x:xs)) = S (toLower x : map toLower xs)
 
 type Env a = [(Var,a)]
 
+
+-- Command function which implements all of the core level functions in our language
 cmd :: Expr -> Env Value -> Value
 cmd (Sentence x) _   = S x
 cmd (Num x) _        = I x
@@ -156,7 +147,10 @@ cmd (Let x b e) m = case cmd b m of
 cmd (Fun x e)     _ = F x e
 cmd (App l r)      m = case (cmd l m,cmd r m) of 
                       (F x e,v) -> cmd e ((x,v):m)
-cmd (Ref x)        m= fromJust(lookup x m)
+cmd (Ref x)        m= case lookup x m of
+                      Nothing -> RuntimeError
+                      _       -> fromJust(lookup x m ) 
+
 cmd (IfElse z y x) m= case cmd z m of
                           B True  -> cmd y m
                           B False -> cmd x m
@@ -191,7 +185,7 @@ or x y = IfElse x true y
 
 typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _) _ = TInt
-typeExpr (Sentence _) m = TString
+typeExpr (Sentence _) _ = TString
 typeExpr (Count x) m = case typeExpr x m of 
                         TString -> TString
                         _       -> Error "Type Error"
@@ -206,29 +200,39 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TBool, TBool)     -> TBool
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
-                        _                  -> Error "Type Error"
+typeExpr (Let _ e1 e2) m = case (typeExpr e1 m, typeExpr e2 m) of
+                          (_, Error a)  -> Error a
+                          (Error a, _) -> Error a
+                          (TInt, _) -> TInt
+                          (TString, _) -> TString
+                          (TFun, _)    -> TFun
+                          (TBool, _)   -> TBool
 typeExpr (Ref x) m = case lookup x m of 
-                          Nothing ->Error  "Undefined Variable"
                           Just (S a) -> typeExpr (Sentence a) m
                           Just (I a) -> typeExpr (Num a) m
+                          _ -> Error  "Undefined Variable"
 typeExpr (Cap x)        m = case typeExpr x m of 
-                        TString -> TString
+                            TString -> TString
+                            _ -> Error "Type Error"
 typeExpr (Split x)      m = case typeExpr x m of
-                        TString -> TString
-                        _                  -> Error "Type Error"
-typeExpr (Cap x)        m = case typeExpr x m of
                         TString -> TString
                         _                  -> Error "Type Error"
 typeExpr (Low x)      m = case typeExpr x m of 
                         TString -> TString
                         _                  -> Error "Type Error"
-typeExpr (IfElse x y z) m = case typeExpr x m of
+
+typeExpr (IfElse x _ _) m = case typeExpr x m of
                               TBool -> TBool
                               _     -> Error "Type Error"
+typeExpr (App _ _) _ = TString
+typeExpr (Remove p s) m = case (typeExpr p m, typeExpr s m) of
+                        (TInt, TString)-> TString
+                        _       -> Error "Type Error"
+typeExpr (Fun _ _)             _ = TString
 
 
-typeProg :: Prog -> Type
-typeProg [e] = typeExpr e
+-- typeProg :: Prog -> Type
+-- typeProg [] = ty
 
 
 --------------------------
@@ -272,6 +276,14 @@ p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "To
 p6 :: Expr
 p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
 
--- p7 :: Expr
--- p7 = Let "a" (Num 233) (Fun "x" Ref)
+p7 :: Expr
+p7 = Let "B" (Num 233) (Ref "B")
+
+-- p8 :: Expr
+-- p8 = Let "i" (Num 10) $ Let "f" (Fun "x" (IfElse (Equ (Ref "i") (Num 1))()(Ref "i")))
+
+theRun :: Expr -> Value
+theRun e = case typeExpr e [] of
+           Error a -> ErrorVal a
+           _       -> cmd e []
  
