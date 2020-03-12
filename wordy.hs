@@ -189,7 +189,7 @@ and x y = IfElse x y false
 or :: Expr -> Expr -> Expr
 or x y = IfElse x true y
 
-typeExpr :: Expr -> Env Var -> Type
+typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) m = TString
 typeExpr (Count x) m = case typeExpr x m of 
@@ -206,23 +206,21 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TBool, TBool)     -> TBool
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
+typeExpr (Ref x) m = case lookup x m of 
+                          Nothing ->Error  "Undefined Variable"
+                          Just (S a) -> typeExpr (Sentence a) m
+                          Just (I a) -> typeExpr (Num a) m
 typeExpr (Split x)      m = case typeExpr x m of 
                         TString -> TString
                         _                  -> Error "Type Error"
 typeExpr (Cap x)        m = case typeExpr x m of 
+                        TString -> TString
                         _                  -> Error "Type Error"
 typeExpr (Low x)      m = case typeExpr x m of 
                         TString -> TString
                         _                  -> Error "Type Error"
 
-
-
-
-
-
-
-
-
+typeProg::Prog -> Env Value -> Bool
 
 
 --------------------------
