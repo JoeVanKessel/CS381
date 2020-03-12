@@ -114,10 +114,10 @@ _removeWord num (x:xs) | num >= 0 = x : _removeWord (num - 1) xs
 -- capitalize [] = []
 -- capitalize sentence = capWord (single) ++ " " ++ (capitalize (unwords list)) -- remove space at the end?
 --                 where (single:list) = listString (Sentence sentence)
---
+-- 
 -- allCap:: String -> Expr
 -- allCap sentence = map toUpper (Sentence sentence)
---
+-- 
 -- allLow:: String -> Expr
 -- allLow sentence = map toLower (Sentence sentence)
 
@@ -140,11 +140,11 @@ cmd (Count x)      m = case cmd x m of
 cmd (Reverse x)    m= case cmd x m of
                           S x' -> reverseSentence (Sentence x')
                           _    -> RuntimeError
-cmd (Insert z y x) m= case (cmd z m, cmd y m, cmd x m) of
+cmd (Insert z y x) m= case (cmd z m, cmd y m, cmd x m) of 
                           (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
                           _                  -> RuntimeError
 cmd (Remove x y)    m= case (cmd x m, cmd y m) of
-                          (I x', S y') -> removeWord (Num x') (Sentence y')
+                          (I x', S y') -> removeWord (Num x') (Sentence y')     
                           _ -> RuntimeError
 cmd (Equ y z)      m= case (cmd y m, cmd z m) of
                           (I a, I b) -> B (a == b)
@@ -154,20 +154,20 @@ cmd (Equ y z)      m= case (cmd y m, cmd z m) of
 cmd (Let x b e) m = case cmd b m of
                     v -> cmd e ((x,v):m)
 cmd (Fun x e)     _ = F x e
-cmd (App l r)      m = case (cmd l m,cmd r m) of
+cmd (App l r)      m = case (cmd l m,cmd r m) of 
                       (F x e,v) -> cmd e ((x,v):m)
 cmd (Ref x)        m= fromJust(lookup x m)
 cmd (IfElse z y x) m= case cmd z m of
                           B True  -> cmd y m
                           B False -> cmd x m
                           _       -> RuntimeError
-cmd (Split x)      m= case cmd x m of
+cmd (Split x)      m= case cmd x m of 
                           S x' -> split (Sentence x')
                           _       -> RuntimeError
-cmd (Cap x)        m= case cmd x m of
+cmd (Cap x)        m= case cmd x m of 
                           S x' -> capWord (Sentence x')
                           _       -> RuntimeError
-cmd (Low x)        m= case cmd x m of
+cmd (Low x)        m= case cmd x m of 
                           S x' -> lowWord (Sentence x')
                           _       -> RuntimeError
 
@@ -192,10 +192,10 @@ or x y = IfElse x true y
 typeExpr :: Expr -> Env Var -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) m = TString
-typeExpr (Count x) m = case typeExpr x m of
+typeExpr (Count x) m = case typeExpr x m of 
                         TString -> TString
                         _       -> Error "Type Error"
-typeExpr (Reverse x) m = case typeExpr x m of
+typeExpr (Reverse x) m = case typeExpr x m of 
                         TString -> TString
                         _       -> Error "Type Error"
 typeExpr (Insert i s1 s2) m = case (typeExpr i m, typeExpr s1 m, typeExpr s2 m) of
@@ -206,22 +206,21 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TBool, TBool)     -> TBool
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
-typeExpr (Split x)      m = case typeExpr x m of
+typeExpr (Split x)      m = case typeExpr x m of 
                         TString -> TString
                         _                  -> Error "Type Error"
-typeExpr (Cap x)        m = case typeExpr x m of
+typeExpr (Cap x)        m = case typeExpr x m of 
                         _                  -> Error "Type Error"
-typeExpr (Low x)      m = case typeExpr x m of
+typeExpr (Low x)      m = case typeExpr x m of 
                         TString -> TString
                         _                  -> Error "Type Error"
--- add IfElse
 typeExpr (IfElse x y z) m = case typeExpr x m of
                               TBool -> TBool
                               _     -> Error "Type Error"
 
 
-
-
+typeProg :: Prog -> Type
+typeProg [e] = typeExpr e
 
 
 --------------------------
@@ -233,7 +232,7 @@ typeExpr (IfElse x y z) m = case typeExpr x m of
 
 -- a program that is still under development with the later implimentation of Bind
 --p1 :: Prog
---p1 = P [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y"))))
+--p1 = P [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
       --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
 
 ----------------------------
@@ -254,12 +253,12 @@ p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "To
 
 -- -- a program that compares two string word counts to see if they are equal
 
--- p4 :: Expr
+-- p4 :: Expr 
 -- p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
 
 -- -- Same but bad program, where Equ is comparing String and Num
 
--- p5 :: Expr
+-- p5 :: Expr 
 -- p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
 
 p6 :: Expr
@@ -267,3 +266,4 @@ p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") 
 
 -- p7 :: Expr
 -- p7 = Let "a" (Num 233) (Fun "x" Ref)
+ 
