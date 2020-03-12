@@ -207,6 +207,10 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
                         _                  -> Error "Type Error"
+typeExpr (Ref x) m = case lookup x m of 
+                          Nothing ->Error  "Undefined Variable"
+                          Just (S a) -> typeExpr (Sentence a) m
+                          Just (I a) -> typeExpr (Num a) m
 typeExpr (Cap x)        m = case typeExpr x m of 
                         TString -> TString
 typeExpr (Split x)      m = case typeExpr x m of
