@@ -221,10 +221,6 @@ typeExpr (Low x)      m = case typeExpr x m of
 
 
 
-
-
-
-
 --------------------------
 -- Command Examples:
 
