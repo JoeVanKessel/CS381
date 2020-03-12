@@ -265,8 +265,8 @@ p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "To
 
 -- -- a program that compares two string word counts to see if they are equal
 
--- p4 :: Expr 
--- p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
+p4 :: Expr 
+p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
 
 -- -- Same but bad program, where Equ is comparing String and Num
 
