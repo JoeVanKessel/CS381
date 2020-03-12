@@ -147,6 +147,7 @@ cmd (Let x b e) m = case cmd b m of
 cmd (Fun x e)     _ = F x e
 cmd (App l r)      m = case (cmd l m,cmd r m) of 
                       (F x e,v) -> cmd e ((x,v):m)
+                      _ -> RuntimeError
 cmd (Ref x)        m= case lookup x m of
                       Nothing -> RuntimeError
                       _       -> fromJust(lookup x m ) 
@@ -183,6 +184,13 @@ and x y = IfElse x y false
 or :: Expr -> Expr -> Expr
 or x y = IfElse x true y
 
+ctv :: Expr -> Value
+ctv (Sentence s) = S s
+ctv (Num a) = I a
+
+cte :: Var -> Expr -> Env Value -> Env Value 
+cte v e ev = [(v,ctv(e))]++ev 
+
 typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) _ = TString
@@ -200,7 +208,7 @@ typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
                         (TBool, TBool)     -> TBool
                         (TString, TString) -> TBool
                         _                  -> Error "Type Error"
-typeExpr (Let _ e1 e2) m = case (typeExpr e1 m, typeExpr e2 m) of
+typeExpr (Let r e1 e2) m = case (typeExpr e1 (cte r e1 m), typeExpr e2 (cte r e1 m)) of
                           (_, Error a)  -> Error a
                           (Error a, _) -> Error a
                           (TInt, _) -> TInt
@@ -274,7 +282,7 @@ p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day J
 -- p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
 
 p6 :: Expr
-p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
+p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "fs") (Sentence "world")
 
 p7 :: Expr
 p7 = Let "B" (Num 233) (Ref "B")
