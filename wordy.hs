@@ -290,8 +290,8 @@ p7 = Let "B" (Num 233) (Ref "B")
 -- p8 :: Expr
 -- p8 = Let "i" (Num 10) $ Let "f" (Fun "x" (IfElse (Equ (Ref "i") (Num 1))()(Ref "i")))
 
-theRun :: Expr -> Value
-theRun e = case typeExpr e [] of
+run :: Expr -> Value
+run e = case typeExpr e [] of
            Error a -> ErrorVal a
            _       -> cmd e []
  
