@@ -179,6 +179,8 @@ cmd (Low x)        m = case cmd x m of
 compareStrings :: Expr -> Expr -> Expr
 compareStrings (Sentence x) (Sentence y) = IfElse (Equ (Count (Sentence x)) (Count (Sentence y))) (true) (false)
 
+insertAtEnd :: Expr -> Expr -> Expr
+insertAtEnd (Sentence x) (Sentence y) = Insert (Count (Sentence y)) (Sentence x) (Sentence y)
 
 
 
