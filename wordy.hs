@@ -301,8 +301,8 @@ run e = case typeExpr e [] of
 
 
  
-example1 :: Value
-example1 = cmd( Let "f" (Fun "x"
+p9 :: Expr
+p9 = Let "f" (Fun "x"
               (Let "y" (Sentence "Hello World") 
               $ IfElse (Equ (Count (Ref "x")) (Count(Ref "y"))) 
                 (Ref "x")
@@ -310,4 +310,4 @@ example1 = cmd( Let "f" (Fun "x"
               )
             )
             $ App (Ref "f") (Sentence "This String Is Passed To Function The Function Initially")
-          ) []
+        
