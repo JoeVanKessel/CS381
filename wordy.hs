@@ -191,6 +191,10 @@ ctv (Num a) = I a
 cte :: Var -> Expr -> Env Value -> Env Value 
 cte v e ev = [(v,ctv(e))]++ev 
 
+vte :: Value -> Expr
+vte (S s) = (Sentence s)
+vte (I a) = (Num a)
+
 typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) _ = TString
@@ -294,4 +298,16 @@ run :: Expr -> Value
 run e = case typeExpr e [] of
            Error a -> ErrorVal a
            _       -> cmd e []
+
+
  
+example1 :: Value
+example1 = cmd( Let "f" (Fun "x"
+              (Let "y" (Sentence "Hello World") 
+              $ IfElse (Equ (Count (Ref "x")) (Count(Ref "y"))) 
+                (Ref "x")
+                (App (Ref "f") (Remove (Num 0) (Ref "x")))
+              )
+            )
+            $ App (Ref "f") (Sentence "This String Is Passed To Function The Function Initially")
+          ) []
