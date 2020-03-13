@@ -176,8 +176,11 @@ cmd (Low x)        m = case cmd x m of
 
 ------- LIBRARY FUNCTIONS -------
 
-compareString :: Expr -> Expr -> Expr
-compareString (Sentence x) (Sentence y) = IfElse (Equ (Count (Sentence x)) (Count (Sentence y))) (true) (false)
+compareStrings :: Expr -> Expr -> Expr
+compareStrings (Sentence x) (Sentence y) = IfElse (Equ (Count (Sentence x)) (Count (Sentence y))) (true) (false)
+
+
+
 
 
 
