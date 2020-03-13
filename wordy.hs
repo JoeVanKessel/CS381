@@ -279,7 +279,7 @@ p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day J
 p5 :: Expr 
 p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
 
--- -- A BAD program example that shows the example of our static type
+-- -- A program that uses the Let and Ref to assign variables and make a final string
 
 p6 :: Expr
 p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
@@ -287,10 +287,12 @@ p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") 
 -- -- A program to assign variable B to a command, then execute the command by calling the variable
 
 p7 :: Expr
-p7 = Let "B" (Num 233) (Ref "B")
+p7 = Let "B" (Num 233) (Ref "x")
 
--- p8 :: Expr
--- p8 = Let "i" (Num 10) $ Let "f" (Fun "x" (IfElse (Equ (Ref "i") (Num 1))()(Ref "i")))
+-- -- A BAD program example that shows the example of our static type
+
+p8 :: Expr
+p8 = Let "B" (Num 233) (Ref "x")
 
 -- -- A program to recursively remove words untill specified condition is met
 
