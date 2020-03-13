@@ -173,6 +173,14 @@ cmd (Low x)        m = case cmd x m of
 --capitalize :: Expr
 --capitalize (Sentence x) = Cap (Sentence (Split (Sentence x)))
 
+
+------- LIBRARY FUNCTIONS -------
+
+compareString :: Expr -> Expr -> Expr
+compareString (Sentence x) (Sentence y) = IfElse (Equ (Count (Sentence x)) (Count (Sentence y))) (true) (false)
+
+
+
 ------- SYNTACTIC SUGAR -------
 
 true :: Expr
@@ -255,9 +263,6 @@ run e = case typeExpr e [] of
 
 
 
-compare :: Expr -> Expr -> Value 
-comapre (Sentence x) (Sentence y) = S (IfElse (Equ (Sentence x) (Sentence y)) (Count (Sentence "Hello there")) )
-
 ----------------- SAMPLE PROGRAMS -------------
 
 -- -- a program to compare two strings, if they are the same, reverse the string, if not, return the count of the sentence
@@ -317,5 +322,8 @@ p9 = Let "f" (Fun "x"
 --               (Let "y" ())
 
 --             )
+
+
+
 
 
