@@ -282,7 +282,7 @@ p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day
 -- -- A BAD program example that shows the example of our static type
 
 p6 :: Expr
-p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "fs") (Sentence "world")
+p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
 
 -- -- A program to assign variable B to a command, then execute the command by calling the variable
 
