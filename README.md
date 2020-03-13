@@ -25,19 +25,19 @@ To run the execute examples programs:
 
 In GHCi:
 
-:l wordy.hs
-run p1
-run p2
-run p3
-...
+- :l wordy.hs
+- run p1
+- run p2
+- run p3
+- ...
 
 There are 10 examples:
 
 Good examples: p1, p2, p4, p5, p6, p7, p9, p10
 
-    - Will return the intended result as described in code file above each example. 
+    Will return the intended result as described in code file above each example. 
 
 BAD examples: p3, p8
 
-    - Will give Error before execution.
+    Will give Error before execution.
 

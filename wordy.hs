@@ -182,8 +182,8 @@ compareStrings (Sentence x) (Sentence y) = IfElse (Equ (Count (Sentence x)) (Cou
 insertAtEnd :: Expr -> Expr -> Expr
 insertAtEnd (Sentence x) (Sentence y) = Insert (Count (Sentence y)) (Sentence x) (Sentence y)
 
-
-
+insertAtBeg :: Expr -> Expr -> Expr
+insertAtBeg (Sentence x) (Sentence y) = Insert (Num 0) (Sentence x) (Sentence y)
 
 
 ------- SYNTACTIC SUGAR -------
