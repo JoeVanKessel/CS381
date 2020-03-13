@@ -41,3 +41,9 @@ BAD examples: p3, p8
 
     Will give Error before execution.
 
+
+Outputs:
+
+
+
+

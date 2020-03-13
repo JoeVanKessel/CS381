@@ -214,7 +214,7 @@ typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _)          _ = TInt
 typeExpr (Sentence _)     _ = TString
 typeExpr (Count x) m        = case typeExpr x m of 
-                                TString                  -> TString
+                                TString                  -> TInt
                                 _                        -> Error "Type Error"
 typeExpr (Reverse x)      m = case typeExpr x m of 
                                 TString                  -> TString
@@ -270,11 +270,11 @@ run e = case typeExpr e [] of
 
 ----------------- SAMPLE PROGRAMS -------------
 
--- -- a program to compare two strings, if they are the same, reverse the string, if not, return the count of the sentence
+-- -- a program to compare two strings, if they are the same, reverse the string, if not, return the count of the sentence. 
 p1 :: Expr 
 p1 = IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello there")) (Count (Sentence "Hello there"))
 
--- -- a program to insert a period after every word of the sentence
+-- -- a program to combine two sentences.
 
 p2 :: Expr
 p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
@@ -287,17 +287,12 @@ p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "
 -- -- a program that compares two string word counts to see if they are equal
 
 p4 :: Expr 
-p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
-
--- -- Same but BAD program, where Equ is comparing String and Num
-
-p5 :: Expr 
-p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
+p4 = compareStrings (Sentence "Good day John") (Sentence "Good day John")
 
 -- -- A program that uses the Let and Ref to assign variables and make a final string
 
-p6 :: Expr
-p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
+p5 :: Expr
+p5 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
 
 -- -- A program to assign variable B to a command, then execute the command by calling the variable
 
