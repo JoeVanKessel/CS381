@@ -44,34 +44,42 @@ import Data.Char
 
 type Var = String
 
-data Type = TInt | TBool | TString | TFun | Error String
-    deriving (Eq, Show)
+type Env a = [(Var,a)]
 
-data Expr = Sentence String
-         | Num Int
-         | Count Expr
-         | Split Expr
-         | Cap Expr
-         | Low Expr
-         | Reverse Expr
-         | Insert Expr Expr Expr
-         | Remove Expr Expr
-         | Let Var Expr Expr
-         | Ref Var
-         | Fun Var Expr
-         | App Expr Expr
-         | Equ Expr Expr
-         | IfElse Expr Expr Expr
+data Type 
+        = TInt 
+        | TBool 
+        | TString 
+        | TFun 
+        | Error String
+  deriving (Eq, Show)
+
+data Expr 
+        = Sentence String
+        | Num Int
+        | Count Expr
+        | Split Expr
+        | Cap Expr
+        | Low Expr
+        | Reverse Expr
+        | Insert Expr Expr Expr
+        | Remove Expr Expr
+        | Let Var Expr Expr
+        | Ref Var
+        | Fun Var Expr
+        | App Expr Expr
+        | Equ Expr Expr
+        | IfElse Expr Expr Expr
   deriving (Eq,Show)
 
 data Value
-   = S String
-   | L [String]
-   | I Int
-   | B Bool
-   | F Var Expr
-   | RuntimeError
-   | ErrorVal String
+        = S String
+        | L [String]
+        | I Int
+        | B Bool
+        | F Var Expr
+        | RuntimeError
+        | ErrorVal String
   deriving (Eq,Show)
 
 
@@ -115,8 +123,6 @@ capWord (Sentence (x:xs)) = S (toUpper x : map toLower xs)
 lowWord :: Expr -> Value
 lowWord (Sentence []) = S []
 lowWord (Sentence (x:xs)) = S (toLower x : map toLower xs)
-
-type Env a = [(Var,a)]
 
 
 -- Command function which implements all of the core level functions in our language
@@ -183,7 +189,7 @@ or x y = IfElse x true y
 
 ctv :: Expr -> Value
 ctv (Sentence s) = S s
-ctv (Num a) = I a
+ctv (Num a)      = I a
 
 cte :: Var -> Expr -> Env Value -> Env Value 
 cte v e ev = [(v,ctv(e))]++ev 
@@ -239,7 +245,6 @@ typeExpr (Remove p s)     m = case (typeExpr p m, typeExpr s m) of
 typeExpr (Fun _ _)        _ =   TString
 
 
-
 --------- RUN PROGRAM -----------
 
 run :: Expr -> Value
@@ -248,30 +253,18 @@ run e = case typeExpr e [] of
            _       -> cmd e []
 
 
---------------------------
--- Command Examples:
-
---cmd (IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello")) (Count (Sentence "Hello")))
-
--- Wordy Programs:
-
--- a program that is still under development with the later implimentation of Bind
---p1 :: Prog
---p1 = P [(Bind (Var "x") (Sentence "Hello World")), (Bind (Var "y") (Sentence "Bye World")), (IfElse (Equ (Count (Var "x") (Count (Var "y")))) 
-      --(Insert (Num 0) (Sentence "Hello") (Var "x")) (Capitalize (Var "y")))]
-
-----------------------------
-
-
 ----------------- SAMPLE PROGRAMS -------------
 
+-- -- a program to compare two strings, if they are the same, reverse the string, if not, return the count of the sentence
+p1 :: Expr 
+p1 = IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hello there")) (Count (Sentence "Hello there"))
 
 -- -- a program to insert a period after every word of the sentence
 
 p2 :: Expr
 p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
--- -- Same but bad program where Insert is taking the String instead of Num
+-- -- Same but BAD program where Insert is taking the String instead of Num
 
 p3 :: Expr
 p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
@@ -281,13 +274,17 @@ p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "
 p4 :: Expr 
 p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day John"))) (true) (false)
 
--- -- Same but bad program, where Equ is comparing String and Num
+-- -- Same but BAD program, where Equ is comparing String and Num
 
 p5 :: Expr 
 p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
 
+-- -- A BAD program example that shows the example of our static type
+
 p6 :: Expr
 p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "fs") (Sentence "world")
+
+-- -- A program to assign variable B to a command, then execute the command by calling the variable
 
 p7 :: Expr
 p7 = Let "B" (Num 233) (Ref "B")
@@ -295,23 +292,10 @@ p7 = Let "B" (Num 233) (Ref "B")
 -- p8 :: Expr
 -- p8 = Let "i" (Num 10) $ Let "f" (Fun "x" (IfElse (Equ (Ref "i") (Num 1))()(Ref "i")))
 
+-- -- A program to recursively remove words untill specified condition is met
 
-
-
--- Recursive remove
 p9 :: Expr
 p9 = Let "f" (Fun "x"
-              (Let "y" (Num 2) 
-              $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
-                (Ref "x")
-                (App (Ref "f") (Remove (Num 0) (Ref "x")))
-              )
-            )
-            $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
-
-
-px :: Expr
-px = Let "f" (Fun "x"
               (Let "y" (Num 2)
               $ Let "z" (Split(Ref "x"))
               $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
@@ -320,6 +304,7 @@ px = Let "f" (Fun "x"
               )
             )
             $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
+
 -- px :: Expr
 -- px = Let "f" (Fun "x"
 --               (Let "y" ())
