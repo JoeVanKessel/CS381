@@ -287,7 +287,7 @@ p5 :: Expr
 p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
 
 p6 :: Expr
-p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "fs") (Sentence "world")
+p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "f") (Sentence "world")
 
 p7 :: Expr
 p7 = Let "B" (Num 233) (Ref "B")
