@@ -300,14 +300,16 @@ run e = case typeExpr e [] of
            _       -> cmd e []
 
 
- 
+-- Recursive remove
 p9 :: Expr
 p9 = Let "f" (Fun "x"
-              (Let "y" (Sentence "Hello World") 
-              $ IfElse (Equ (Count (Ref "x")) (Count(Ref "y"))) 
+              (Let "y" (Num 2) 
+              $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
                 (Ref "x")
                 (App (Ref "f") (Remove (Num 0) (Ref "x")))
               )
             )
-            $ App (Ref "f") (Sentence "This String Is Passed To Function The Function Initially")
-        
+            $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
+
+
+
