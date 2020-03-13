@@ -191,10 +191,6 @@ ctv (Num a) = I a
 cte :: Var -> Expr -> Env Value -> Env Value 
 cte v e ev = [(v,ctv(e))]++ev 
 
-vte :: Value -> Expr
-vte (S s) = (Sentence s)
-vte (I a) = (Num a)
-
 typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) _ = TString
@@ -311,5 +307,21 @@ p9 = Let "f" (Fun "x"
             )
             $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
 
+
+px :: Expr
+px = Let "f" (Fun "x"
+              (Let "y" (Num 2)
+              $ Let "z" (Split(Ref "x"))
+              $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
+                (Ref "z")
+                (App (Ref "f") (Remove (Num 0) (Ref "x")))
+              )
+            )
+            $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
+-- px :: Expr
+-- px = Let "f" (Fun "x"
+--               (Let "y" ())
+
+--             )
 
 
