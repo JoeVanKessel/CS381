@@ -170,9 +170,6 @@ cmd (Low x)        m = case cmd x m of
                           _                 -> RuntimeError
 
 
---capitalize :: Expr
---capitalize (Sentence x) = Cap (Sentence (Split (Sentence x)))
-
 
 ------- LIBRARY FUNCTIONS -------
 
@@ -266,8 +263,6 @@ run e = case typeExpr e [] of
            _       -> cmd e []
 
 
-
-
 ----------------- SAMPLE PROGRAMS -------------
 
 -- -- a program to compare two strings, if they are the same, reverse the string, if not, return the count of the sentence. 
@@ -277,9 +272,9 @@ p1 = IfElse (Equ (Sentence "Hello") (Sentence "Hello")) (Reverse (Sentence "Hell
 -- -- a program to combine two sentences.
 
 p2 :: Expr
-p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
+p2 = insertAtEnd (Sentence "good day") (Sentence "Today is a ")
 
--- -- Same but BAD program where Insert is taking the String instead of Num
+-- -- BAD program where Insert is taking the String instead of Num
 
 p3 :: Expr
 p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
@@ -296,18 +291,18 @@ p5 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") 
 
 -- -- A program to assign variable B to a command, then execute the command by calling the variable
 
-p7 :: Expr
-p7 = Let "B" (Num 233) (Ref "x")
+p6 :: Expr
+p6 = Let "B" (Num 233) (Ref "B")
 
 -- -- A BAD program example that shows the example of our static type
 
-p8 :: Expr
-p8 = Let "B" (Num 233) (Ref "x")
+p7 :: Expr
+p7 = Let "B" (Num 233) (Ref "x")
 
 -- -- A program to recursively remove words untill specified condition is met
 
-p9 :: Expr
-p9 = Let "f" (Fun "x"
+p8 :: Expr
+p8 = Let "f" (Fun "x"
               (Let "y" (Num 2)
               $ Let "z" (Split(Ref "x"))
               $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
@@ -317,9 +312,10 @@ p9 = Let "f" (Fun "x"
             )
             $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
 
+-- -- A program that performs lowercase and capitalization on a string
 
-p10 :: Expr
-p10 = Let "f" (Fun "x"
+p9 :: Expr
+p9 = Let "f" (Fun "x"
               (
               Let "cntr" (Count (Ref "x"))
               $ Let "w1" (Sentence "LOWERCASE")
@@ -328,7 +324,6 @@ p10 = Let "f" (Fun "x"
                 (App (Ref "f2") (Insert (Ref "cntr") (Low(Ref "w1")) (Ref "x")))
               )
             )
-            -- $ App (Ref "f") (Sentence "")
             $ Let "f2" (Fun "y"
               (
               Let "cntr" (Count (Ref "y"))
