@@ -214,7 +214,7 @@ typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _)          _ = TInt
 typeExpr (Sentence _)     _ = TString
 typeExpr (Count x) m        = case typeExpr x m of 
-                                TString                  -> TString
+                                TString                  -> TInt
                                 _                        -> Error "Type Error"
 typeExpr (Reverse x)      m = case typeExpr x m of 
                                 TString                  -> TString
