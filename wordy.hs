@@ -108,48 +108,47 @@ type Env a = [(Var,a)]
 
 -- Command function which implements all of the core level functions in our language
 cmd :: Expr -> Env Value -> Value
-cmd (Sentence x) _   = S x
-cmd (Num x) _        = I x
+cmd (Sentence x)   _ = S x
+cmd (Num x)        _ = I x
 cmd (Count x)      m = case cmd x m of
-                          S x' -> countWords (Sentence x')
-                          _    -> RuntimeError
-cmd (Reverse x)    m= case cmd x m of
-                          S x' -> reverseSentence (Sentence x')
-                          _    -> RuntimeError
-cmd (Insert z y x) m= case (cmd z m, cmd y m, cmd x m) of 
+                          S x'               -> countWords (Sentence x')
+                          _                  -> RuntimeError
+cmd (Reverse x)    m = case cmd x m of
+                          S x'               -> reverseSentence (Sentence x')
+                          _                  -> RuntimeError
+cmd (Insert z y x) m = case (cmd z m, cmd y m, cmd x m) of 
                           (I z', S y', S x') -> insertWord (Num z') (Sentence y') (Sentence x')
                           _                  -> RuntimeError
-cmd (Remove x y)    m= case (cmd x m, cmd y m) of
-                          (I x', S y') -> removeWord (Num x') (Sentence y')     
+cmd (Remove x y)   m = case (cmd x m, cmd y m) of
+                          (I x', S y')       -> removeWord (Num x') (Sentence y')     
                           _ -> RuntimeError
-cmd (Equ y z)      m= case (cmd y m, cmd z m) of
-                          (I a, I b) -> B (a == b)
-                          (B a, B b) -> B (a == b)
-                          (S i, S j) -> B (i == j)
-                          _          -> RuntimeError
-cmd (Let x b e) m = case cmd b m of
-                    v -> cmd e ((x,v):m)
-cmd (Fun x e)     _ = F x e
+cmd (Equ y z)      m = case (cmd y m, cmd z m) of
+                          (I a, I b)        -> B (a == b)
+                          (B a, B b)        -> B (a == b)
+                          (S i, S j)        -> B (i == j)
+                          _                 -> RuntimeError
+cmd (Let x b e)    m = case cmd b m of
+                          v -> cmd e ((x,v):m)
+cmd (Fun x e)      _ =    F x e
 cmd (App l r)      m = case (cmd l m,cmd r m) of 
-                      (F x e,v) -> cmd e ((x,v):m)
-                      _ -> RuntimeError
-cmd (Ref x)        m= case lookup x m of
-                      Nothing -> RuntimeError
-                      _       -> fromJust(lookup x m ) 
-
-cmd (IfElse z y x) m= case cmd z m of
-                          B True  -> cmd y m
-                          B False -> cmd x m
-                          _       -> RuntimeError
-cmd (Split x)      m= case cmd x m of 
-                          S x' -> split (Sentence x')
-                          _       -> RuntimeError
-cmd (Cap x)        m= case cmd x m of 
-                          S x' -> capWord (Sentence x')
-                          _       -> RuntimeError
-cmd (Low x)        m= case cmd x m of 
-                          S x' -> lowWord (Sentence x')
-                          _       -> RuntimeError
+                          (F x e,v)         -> cmd e ((x,v):m)
+                          _                 -> RuntimeError
+cmd (Ref x)        m = case lookup x m of
+                          Nothing           -> RuntimeError
+                          _                 -> fromJust(lookup x m )
+cmd (IfElse z y x) m = case cmd z m of
+                          B True            -> cmd y m
+                          B False           -> cmd x m
+                          _                 -> RuntimeError
+cmd (Split x)      m = case cmd x m of 
+                          S x'              -> split (Sentence x')
+                          _                 -> RuntimeError
+cmd (Cap x)        m = case cmd x m of 
+                          S x'              -> capWord (Sentence x')
+                          _                 -> RuntimeError
+cmd (Low x)        m = case cmd x m of 
+                          S x'              -> lowWord (Sentence x')
+                          _                 -> RuntimeError
 
 
 --capitalize :: Expr
@@ -180,51 +179,51 @@ cte v e ev = [(v,ctv(e))]++ev
 ----- STATIC TYPE CHECKING ------
  
 typeExpr :: Expr -> Env Value -> Type
-typeExpr (Num _) _ = TInt
-typeExpr (Sentence _) _ = TString
-typeExpr (Count x) m = case typeExpr x m of 
-                        TString -> TString
-                        _       -> Error "Type Error"
-typeExpr (Reverse x) m = case typeExpr x m of 
-                        TString -> TString
-                        _       -> Error "Type Error"
+typeExpr (Num _)          _ = TInt
+typeExpr (Sentence _)     _ = TString
+typeExpr (Count x) m        = case typeExpr x m of 
+                                TString                  -> TString
+                                _                        -> Error "Type Error"
+typeExpr (Reverse x)      m = case typeExpr x m of 
+                                TString                  -> TString
+                                _                        -> Error "Type Error"
 typeExpr (Insert i s1 s2) m = case (typeExpr i m, typeExpr s1 m, typeExpr s2 m) of
-                              (TInt, TString, TString) -> TString
-                              _                        -> Error "Type Error"
-typeExpr (Equ x y) m = case (typeExpr x m, typeExpr y m) of
-                        (TInt, TInt)       -> TBool
-                        (TBool, TBool)     -> TBool
-                        (TString, TString) -> TBool
-                        _                  -> Error "Type Error"
-typeExpr (Let r e1 e2) m = case (typeExpr e1 (cte r e1 m), typeExpr e2 (cte r e1 m)) of
-                          (_, Error a)  -> Error a
-                          (Error a, _) -> Error a
-                          (TInt, _) -> TInt
-                          (TString, _) -> TString
-                          (TFun, _)    -> TFun
-                          (TBool, _)   -> TBool
-typeExpr (Ref x) m = case lookup x m of 
-                          Just (S a) -> typeExpr (Sentence a) m
-                          Just (I a) -> typeExpr (Num a) m
-                          _ -> Error  "Undefined Variable"
-typeExpr (Cap x)        m = case typeExpr x m of 
-                            TString -> TString
-                            _ -> Error "Type Error"
-typeExpr (Split x)      m = case typeExpr x m of
-                        TString -> TString
-                        _                  -> Error "Type Error"
-typeExpr (Low x)      m = case typeExpr x m of 
-                        TString -> TString
-                        _                  -> Error "Type Error"
+                                (TInt, TString, TString) -> TString
+                                _                        -> Error "Type Error"
+typeExpr (Equ x y)        m = case (typeExpr x m, typeExpr y m) of
+                                (TInt, TInt)             -> TBool
+                                (TBool, TBool)           -> TBool
+                                (TString, TString)       -> TBool
+                                _                        -> Error "Type Error"
+typeExpr (Let r e1 e2)    m = case (typeExpr e1 (cte r e1 m), typeExpr e2 (cte r e1 m)) of
+                                (_, Error a)             -> Error a
+                                (Error a, _)             -> Error a
+                                (TInt, _)                -> TInt
+                                (TString, _)             -> TString
+                                (TFun, _)                -> TFun
+                                (TBool, _)               -> TBool
+typeExpr (Ref x)          m = case lookup x m of 
+                                Just (S a)               -> typeExpr (Sentence a) m
+                                Just (I a)               -> typeExpr (Num a) m
+                                _                        -> Error  "Undefined Variable"
+typeExpr (Cap x)          m = case typeExpr x m of 
+                                TString                  -> TString
+                                _                        -> Error "Type Error"
+typeExpr (Split x)        m = case typeExpr x m of
+                                TString                  -> TString
+                                _                        -> Error "Type Error"
+typeExpr (Low x)          m = case typeExpr x m of 
+                                TString                  -> TString
+                                _                        -> Error "Type Error"
 
-typeExpr (IfElse x _ _) m = case typeExpr x m of
-                              TBool -> TBool
-                              _     -> Error "Type Error"
-typeExpr (App _ _) _ = TString
-typeExpr (Remove p s) m = case (typeExpr p m, typeExpr s m) of
-                        (TInt, TString)-> TString
-                        _       -> Error "Type Error"
-typeExpr (Fun _ _)             _ = TString
+typeExpr (IfElse x _ _)   m = case typeExpr x m of
+                                TBool                    -> TBool
+                                _                        -> Error "Type Error"
+typeExpr (App _ _)        _ =   TString
+typeExpr (Remove p s)     m = case (typeExpr p m, typeExpr s m) of
+                                (TInt, TString)          -> TString
+                                _                        -> Error "Type Error"
+typeExpr (Fun _ _)        _ =   TString
 
 
 
