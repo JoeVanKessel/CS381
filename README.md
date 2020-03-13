@@ -31,7 +31,7 @@ In GHCi:
 - run p3
 - ...
 
-There are 10 examples:
+There are 9 examples:
 
 Featured examples: p8 and p9
 
