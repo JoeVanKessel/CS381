@@ -1,12 +1,9 @@
 module Wordy where
 
-
 import Data.Maybe (fromJust)
 import Data.Char
--- import Data.Map (Map,fromList,lookup,insert)
 
--- import Prelude hiding (lookup)
---
+
 -- * Syntax of Wordy
 --
 
@@ -30,9 +27,8 @@ import Data.Char
 --                 |  `if` expr expr `else` expr
 --
 
+------- DATA'S AND TYPES -------
 
-
-type Prog = [Expr]
 type Var = String
 
 data Type = TInt | TBool | TString | TFun | Error String
@@ -55,12 +51,6 @@ data Expr = Sentence String
          | IfElse Expr Expr Expr
   deriving (Eq,Show)
 
--- data Stmt = Bind Var Expr
---           | IfElse Expr Stmt Stmt
---           | While Expr Stmt
---           | Block [Stmt]
---   deriving (Eq,Show)
-
 data Value
    = S String
    | L [String]
@@ -72,12 +62,7 @@ data Value
   deriving (Eq,Show)
 
 
--- type Decl = (Var,Type)
--- data Prog = P [Decl] Stmt
---   deriving (Eq,Show)
-
--- type Env a = Map Var a
-
+  ----- HASKELL FUNCTIONS --------
 
 -- A helper function to split a string into a list of strings
 listString :: Expr -> [String]
@@ -170,7 +155,7 @@ cmd (Low x)        m= case cmd x m of
 --capitalize :: Expr
 --capitalize (Sentence x) = Cap (Sentence (Split (Sentence x)))
 
--- Syntactic Sugar
+------- SYNTACTIC SUGAR -------
 
 true :: Expr
 true = Equ (Sentence "x y") (Sentence "x y")
@@ -191,6 +176,9 @@ ctv (Num a) = I a
 cte :: Var -> Expr -> Env Value -> Env Value 
 cte v e ev = [(v,ctv(e))]++ev 
 
+
+----- STATIC TYPE CHECKING ------
+ 
 typeExpr :: Expr -> Env Value -> Type
 typeExpr (Num _) _ = TInt
 typeExpr (Sentence _) _ = TString
@@ -239,8 +227,13 @@ typeExpr (Remove p s) m = case (typeExpr p m, typeExpr s m) of
 typeExpr (Fun _ _)             _ = TString
 
 
--- typeProg :: Prog -> Type
--- typeProg [] = ty
+
+--------- RUN PROGRAM -----------
+
+run :: Expr -> Value
+run e = case typeExpr e [] of
+           Error a -> ErrorVal a
+           _       -> cmd e []
 
 
 --------------------------
@@ -258,7 +251,7 @@ typeExpr (Fun _ _)             _ = TString
 ----------------------------
 
 
------------------Working Programs-------------
+----------------- SAMPLE PROGRAMS -------------
 
 
 -- -- a program to insert a period after every word of the sentence
@@ -268,8 +261,8 @@ p2 = Insert (Count (Sentence "Today is a ")) (Sentence "good day") (Sentence "To
 
 -- -- Same but bad program where Insert is taking the String instead of Num
 
--- p3 :: Expr
--- p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
+p3 :: Expr
+p3 = Insert (Reverse (Sentence "Today is a ")) (Sentence "good day") (Sentence "Today is a ")
 
 -- -- a program that compares two string word counts to see if they are equal
 
@@ -278,8 +271,8 @@ p4 = IfElse (Equ (Count (Sentence "Good day John")) (Count (Sentence "Good day J
 
 -- -- Same but bad program, where Equ is comparing String and Num
 
--- p5 :: Expr 
--- p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
+p5 :: Expr 
+p5 = IfElse (Equ (Count (Sentence "Good day John")) (Reverse (Sentence "Good day John"))) (true) (false)
 
 p6 :: Expr
 p6 = Let "str" (Sentence "Hello") $ Let "f" (Fun "x" (Insert (Count (Ref "str") ) (Ref "x") (Ref "str"))) $ App (Ref "fs") (Sentence "world")
@@ -290,10 +283,7 @@ p7 = Let "B" (Num 233) (Ref "B")
 -- p8 :: Expr
 -- p8 = Let "i" (Num 10) $ Let "f" (Fun "x" (IfElse (Equ (Ref "i") (Num 1))()(Ref "i")))
 
-run :: Expr -> Value
-run e = case typeExpr e [] of
-           Error a -> ErrorVal a
-           _       -> cmd e []
+
 
 
 -- Recursive remove
