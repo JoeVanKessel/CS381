@@ -4,26 +4,39 @@ import Data.Maybe (fromJust)
 import Data.Char
 
 
--- * Syntax of Wordy
---
-
 -- Grammar for Wordy:
 
---    prog       ::= cmd*
+--    var       ::= string
+
+--    type      ::= int
+--                | bool
+--                | string
+--                | function
+--                | error
 
 
 --    value     ::= string
 --                | int
+--                | list
 --                | bool
---                | error
+--                | function
+--                | run error
+--                | eval error
 
---    cmd        ::= sentence
+--    expr        ::= sentence
 --                 |  number
---                 |  `bind` expr
 --                 |  `count` expr
+--                 |  `split` expr
+--                 |  `cap` expr
+--                 |  `low` expr
 --                 |  `reverse` expr
 --                 |  `insert` expr
 --                 |  `remove` expr
+--                 |  `let` var expr expr
+--                 |  `ref` expr
+--                 |  `fun` var expr
+--                 |  `app` expr expr
+--                 |  `equ` expr expr
 --                 |  `if` expr expr `else` expr
 --
 
