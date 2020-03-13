@@ -253,6 +253,11 @@ run e = case typeExpr e [] of
            _       -> cmd e []
 
 
+
+
+compare :: Expr -> Expr -> Value 
+comapre (Sentence x) (Sentence y) = S (IfElse (Equ (Sentence x) (Sentence y)) (Count (Sentence "Hello there")) )
+
 ----------------- SAMPLE PROGRAMS -------------
 
 -- -- a program to compare two strings, if they are the same, reverse the string, if not, return the count of the sentence
