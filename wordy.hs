@@ -299,7 +299,8 @@ run e = case typeExpr e [] of
 -- Recursive remove
 p9 :: Expr
 p9 = Let "f" (Fun "x"
-              (Let "y" (Num 2) 
+              (
+              Let "y" (Num 2) 
               $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
                 (Ref "x")
                 (App (Ref "f") (Remove (Num 0) (Ref "x")))
@@ -307,21 +308,25 @@ p9 = Let "f" (Fun "x"
             )
             $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
 
-
-px :: Expr
+p10 :: Expr
 px = Let "f" (Fun "x"
-              (Let "y" (Num 2)
-              $ Let "z" (Split(Ref "x"))
-              $ IfElse (Equ (Count (Ref "x")) (Ref "y"))
-                (Ref "z")
-                (App (Ref "f") (Remove (Num 0) (Ref "x")))
+              (
+              Let "cntr" (Count (Ref "x"))
+              $ Let "w1" (Sentence "LOWERCASE")
+              $ IfElse (Equ (Ref "cntr") (Num 5))
+                (Ref "x")
+                (App (Ref "f2") (Insert (Ref "cntr") (Low(Ref "w1")) (Ref "x")))
               )
             )
-            $ App (Ref "f") (Sentence "There are 14 words in this sentence. This example will return the LAST TWO")
--- px :: Expr
--- px = Let "f" (Fun "x"
---               (Let "y" ())
-
---             )
-
+            -- $ App (Ref "f") (Sentence "")
+            $ Let "f2" (Fun "y"
+              (
+              Let "cntr" (Count (Ref "y"))
+                $ Let "w2" (Sentence "capital")
+                $ IfElse (Equ (Ref "cntr") (Num 5))
+                  (Ref "y")
+                  (App (Ref "f") (Insert (Ref "cntr") (Cap(Ref "w2")) (Ref "y")))
+              )
+            )
+            $ App (Ref "f") (Sentence "")
 
